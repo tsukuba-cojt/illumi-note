@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8
+    container_name: illuminote_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: illuminote_dev
+      MYSQL_USER: illuminote
+      MYSQL_PASSWORD: password123
+    ports:
+      - "3306:3306"
+    command: --mysql-native-password=ON
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:
