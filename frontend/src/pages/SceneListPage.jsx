@@ -24,9 +24,8 @@ export default function SceneListPage() {
       if (distanceFromBottom > 80) return
 
       setVisibleCount((prev) => {
-        const total = project.scenes?.length ?? 0
-        if (prev >= total) return prev
-        return Math.min(prev + 2, total)
+        // 上限は設けず、スクロールのたびに 2 件ずつ増やす
+        return prev + 2
       })
     }
 
@@ -64,38 +63,61 @@ export default function SceneListPage() {
       </header>
 
       <section className="scene-list" aria-label="シーン一覧">
-        {project.scenes?.slice(0, visibleCount).map((scene) => (
-          <article key={scene.id} className="scene-card">
-            <header className="scene-card-header">
-              <div className="project-detail-fields">
-                <div className="project-detail-field">
-                  <span className="project-detail-field-label">TIME</span>
-                  <div className="project-detail-field-box">{scene.time}</div>
+        {Array.from({ length: visibleCount }).map((_, index) => {
+          const scene = project.scenes?.[index]
+          const isPlaceholder = !scene
+          const key = scene?.id ?? `placeholder-${index}`
+
+          const card = (
+            <article className="scene-card">
+              <header className="scene-card-header">
+                <div className="project-detail-fields">
+                  <div className="project-detail-field">
+                    <span className="project-detail-field-label">TIME</span>
+                    <div className="project-detail-field-box">{scene?.time ?? ''}</div>
+                  </div>
+                  <div className="project-detail-field">
+                    <span className="project-detail-field-label">SCENE NAME</span>
+                    <div className="project-detail-field-box">
+                      {scene?.sceneName ?? ''}
+                    </div>
+                  </div>
                 </div>
-                <div className="project-detail-field">
-                  <span className="project-detail-field-label">SCENE NAME</span>
-                  <div className="project-detail-field-box">{scene.sceneName}</div>
+              </header>
+
+              <div className="scene-card-body">
+                <div className="scene-card-stage">
+                  <div className="project-detail-stage-placeholder">
+                    <span>{isPlaceholder ? 'New Scene' : 'Stage Preview'}</span>
+                  </div>
+                </div>
+
+                <div className="scene-card-side">
+                  <div className="scene-card-panel" />
+                  <div className="scene-card-panel" />
                 </div>
               </div>
-            </header>
+            </article>
+          )
 
-            <div className="scene-card-body">
-              <Link
-                to={`/projects/${project.id}/scenes/${scene.id}`}
-                className="scene-card-stage"
-              >
-                <div className="project-detail-stage-placeholder">
-                  <span>Stage Preview</span>
-                </div>
-              </Link>
-
-              <div className="scene-card-side">
-                <div className="scene-card-panel" />
-                <div className="scene-card-panel" />
+          if (isPlaceholder) {
+            return (
+              <div key={key} className="scene-card-link-disabled">
+                {card}
               </div>
-            </div>
-          </article>
-        ))}
+            )
+          }
+
+          return (
+            <Link
+              key={key}
+              to={`/projects/${project.id}/scenes/${scene.id}`}
+              className="scene-card-link"
+            >
+              {card}
+            </Link>
+          )
+        })}
       </section>
     </div>
   )

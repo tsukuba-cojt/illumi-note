@@ -431,6 +431,13 @@
   background-color: #f3f4f6;
 }
 
+.scene-card-link,
+.scene-card-link-disabled {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
 .scene-list-sentinel {
   height: 1px;
 }
