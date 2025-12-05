@@ -1,12 +1,71 @@
 import { useParams, Link } from 'react-router-dom'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { findScene } from '../mock/projects.js'
+
+function getLightingInfoText(label) {
+  if (!label) return 'このライトの説明です。'
+  if (label.startsWith('SS')) return 'このシーンのメインの明るさ（％）を表します。'
+  if (label.startsWith('ホリ')) return 'ホリ（背景幕）を照らすライトの色設定です。'
+  if (label.startsWith('ピンスポットライト')) return 'ピンスポットライト（前面のスポット）の色設定です。'
+  return 'このライトの説明です。'
+}
 
 export default function ProjectDetailPage() {
   const { projectId, sceneId } = useParams()
 
   const { project, scene } = findScene(projectId, sceneId)
   const [activeTab, setActiveTab] = useState('lighting')
+  const [lightingControls, setLightingControls] = useState(
+    () =>
+      scene?.lighting?.map((line) => {
+        const match = line.match(/(.*?)(\d+)\s*%/)
+        const baseLabel = match ? match[1].trim() : line
+        const initialLevel = match ? Number(match[2]) : 50
+
+        return {
+          label: baseLabel,
+          level: initialLevel,
+          color: '#ffffff',
+          isOn: true,
+          showInfo: false,
+        }
+      }) || []
+  )
+  const [memoText, setMemoText] = useState(scene.memo || '')
+
+  useEffect(() => {
+    setMemoText(scene.memo || '')
+  }, [scene])
+
+  useEffect(() => {
+    if (!scene) return
+    if (typeof window === 'undefined') return
+
+    try {
+      const key = `sceneSettings:${projectId}:${sceneId}`
+      const saved = window.localStorage.getItem(key)
+      if (!saved) return
+
+      const parsed = JSON.parse(saved)
+      if (Array.isArray(parsed.lightingControls)) {
+        setLightingControls(parsed.lightingControls)
+      }
+      if (typeof parsed.memoText === 'string') {
+        setMemoText(parsed.memoText)
+      }
+    } catch {}
+  }, [projectId, sceneId, scene])
+
+  useEffect(() => {
+    if (!scene) return
+    if (typeof window === 'undefined') return
+
+    try {
+      const key = `sceneSettings:${projectId}:${sceneId}`
+      const payload = JSON.stringify({ lightingControls, memoText })
+      window.localStorage.setItem(key, payload)
+    } catch {}
+  }, [projectId, sceneId, scene, lightingControls, memoText])
 
   if (!project || !scene) {
     return (
@@ -14,7 +73,7 @@ export default function ProjectDetailPage() {
         <header className="projects-header">
           <h1 className="projects-title">シーンが見つかりません</h1>
           <div className="projects-actions">
-            <Link to="/projects" className="projects-new-button">
+            <Link to={`/projects/${projectId}`} className="projects-new-button">
               一覧に戻る
             </Link>
           </div>
@@ -28,7 +87,7 @@ export default function ProjectDetailPage() {
       <header className="projects-header">
         <h1 className="projects-title">{project.name}</h1>
         <div className="projects-actions">
-          <Link to="/projects" className="projects-new-button">
+          <Link to={`/projects/${projectId}`} className="projects-new-button">
             一覧に戻る
           </Link>
         </div>
@@ -76,29 +135,106 @@ export default function ProjectDetailPage() {
             <div className="project-detail-panel">
               <div className="project-detail-panel-title-row">
                 <div className="project-detail-panel-title">Lighting</div>
-                <div
-                  className="project-detail-tabs"
-                  role="tablist"
-                  aria-label="詳細タブ"
-                >
-                  <button
-                    type="button"
-                    className={`project-detail-tab${
-                      activeTab === 'lighting' ? ' project-detail-tab-active' : ''
-                    }`}
-                    onClick={() => setActiveTab('lighting')}
-                  >
-                    Lighting
-                  </button>
-                </div>
               </div>
 
               {activeTab === 'lighting' && (
-                <ul className="project-detail-lighting-list">
-                  {scene.lighting?.map((line, index) => (
-                    <li key={index}>{line}</li>
+                <div className="project-detail-lighting-list">
+                  {lightingControls.length === 0 && (
+                    <p className="project-detail-lighting-empty">
+                      ライティング情報がありません。
+                    </p>
+                  )}
+                  {lightingControls.map((control, index) => (
+                    <div
+                      key={index}
+                      className={`lighting-control-row${
+                        !control.isOn ? ' lighting-control-row-off' : ''
+                      }`}
+                    >
+                      <div className="lighting-control-header">
+                        <span className="lighting-control-label">
+                          {control.label || `Light ${index + 1}`}
+                          {typeof control.level === 'number' && (
+                            <span className="lighting-control-percent">{` ${control.level}%`}</span>
+                          )}
+                        </span>
+                        <div className="lighting-control-actions">
+                          <button
+                            type="button"
+                            className="lighting-info-button"
+                            onClick={() =>
+                              setLightingControls((prev) =>
+                                prev.map((c, i) =>
+                                  i === index ? { ...c, showInfo: !c.showInfo } : c
+                                )
+                              )
+                            }
+                          >
+                            i
+                          </button>
+                          <button
+                            type="button"
+                            className={`lighting-toggle-button${
+                              control.isOn
+                                ? ' lighting-toggle-on'
+                                : ' lighting-toggle-off'
+                            }`}
+                            onClick={() =>
+                              setLightingControls((prev) =>
+                                prev.map((c, i) =>
+                                  i === index ? { ...c, isOn: !c.isOn } : c
+                                )
+                              )
+                            }
+                          >
+                            {control.isOn ? 'ON' : 'OFF'}
+                          </button>
+                        </div>
+                      </div>
+
+                      {control.showInfo && (
+                        <div className="lighting-info-tooltip">
+                          {getLightingInfoText(control.label)}
+                        </div>
+                      )}
+
+                      <div className="lighting-control-body">
+                        <div className="lighting-slider-group">
+                          <input
+                            type="range"
+                            min="0"
+                            max="100"
+                            value={control.level}
+                            onChange={(e) =>
+                              setLightingControls((prev) =>
+                                prev.map((c, i) =>
+                                  i === index
+                                    ? { ...c, level: Number(e.target.value) }
+                                    : c
+                                )
+                              )
+                            }
+                          />
+                          <span className="lighting-level-value">{control.level}</span>
+                        </div>
+
+                        <div className="lighting-color-group">
+                          <input
+                            type="color"
+                            value={control.color}
+                            onChange={(e) =>
+                              setLightingControls((prev) =>
+                                prev.map((c, i) =>
+                                  i === index ? { ...c, color: e.target.value } : c
+                                )
+                              )
+                            }
+                          />
+                        </div>
+                      </div>
+                    </div>
                   ))}
-                </ul>
+                </div>
               )}
 
               {activeTab === 'members' && (
@@ -116,16 +252,20 @@ export default function ProjectDetailPage() {
 
               {activeTab === 'memo' && (
                 <p className="project-detail-memo">
-                  {scene.memo || 'メモはまだありません。'}
+                  {memoText || 'メモはまだありません。'}
                 </p>
               )}
             </div>
 
             <div className="project-detail-panel">
               <div className="project-detail-panel-title">MEMO</div>
-              <p className="project-detail-memo">
-                {scene.memo || 'メモはまだありません。'}
-              </p>
+              <textarea
+                className="project-detail-memo"
+                value={memoText}
+                onChange={(e) => setMemoText(e.target.value)}
+                placeholder="メモを入力してください"
+                rows={4}
+              />
             </div>
           </div>
         </div>

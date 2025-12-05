@@ -2,6 +2,42 @@ import { useParams, Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { findProject } from '../mock/projects.js'
 
+function getSceneDisplayData(projectId, scene) {
+  const baseLightingControls =
+    scene.lighting?.map((line) => {
+      const match = line.match(/(.*?)(\d+)\s*%/)
+      const baseLabel = match ? match[1].trim() : line
+      const initialLevel = match ? Number(match[2]) : 50
+
+      return {
+        label: baseLabel,
+        level: initialLevel,
+        color: '#ffffff',
+      }
+    }) || []
+
+  let lightingControls = baseLightingControls
+  let memoText = scene.memo || ''
+
+  if (typeof window !== 'undefined') {
+    try {
+      const key = `sceneSettings:${projectId}:${scene.id}`
+      const saved = window.localStorage.getItem(key)
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (Array.isArray(parsed.lightingControls)) {
+          lightingControls = parsed.lightingControls
+        }
+        if (typeof parsed.memoText === 'string') {
+          memoText = parsed.memoText
+        }
+      }
+    } catch {}
+  }
+
+  return { lightingControls, memoText }
+}
+
 export default function SceneListPage() {
   const { projectId } = useParams()
   const project = findProject(projectId)
@@ -67,6 +103,7 @@ export default function SceneListPage() {
           const scene = project.scenes?.[index]
           const isPlaceholder = !scene
           const key = scene?.id ?? `placeholder-${index}`
+          const display = scene ? getSceneDisplayData(project.id, scene) : null
 
           const card = (
             <article className="scene-card">
@@ -93,8 +130,40 @@ export default function SceneListPage() {
                 </div>
 
                 <div className="scene-card-side">
-                  <div className="scene-card-panel" />
-                  <div className="scene-card-panel" />
+                  {scene ? (
+                    <>
+                      <div className="scene-card-panel">
+                        <div className="project-detail-panel-title">Lighting</div>
+                        <ul className="scene-card-lighting-list">
+                          {display.lightingControls.map((light, i) => (
+                            <li key={i} className="scene-card-lighting-item">
+                              <span className="scene-card-lighting-label">
+                                {light.label || `Light ${i + 1}`}
+                              </span>
+                              <span className="scene-card-lighting-level">
+                                {typeof light.level === 'number' ? `${light.level}%` : ''}
+                              </span>
+                              <span
+                                className="scene-card-lighting-color"
+                                style={{ backgroundColor: light.color || '#ffffff' }}
+                              />
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div className="scene-card-panel">
+                        <div className="project-detail-panel-title">MEMO</div>
+                        <p className="scene-card-memo">
+                          {display.memoText || 'メモはまだありません。'}
+                        </p>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="scene-card-panel" />
+                      <div className="scene-card-panel" />
+                    </>
+                  )}
                 </div>
               </div>
             </article>
