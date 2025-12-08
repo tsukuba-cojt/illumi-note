@@ -672,6 +672,10 @@
   white-space: pre-wrap;
 }
 
+.scene-card-memo-placeholder {
+  color: #9ca3af;
+}
+
 .scene-card-link,
 .scene-card-link-disabled {
   display: block;

@@ -27,7 +27,7 @@ export default function ProjectDetailPage() {
     foundScene ??
     (project && {
       id: sceneId,
-      time: '',
+      time: '0:00',
       sceneName: defaultSceneName,
       lighting: [],
       memo: '',
@@ -45,9 +45,22 @@ export default function ProjectDetailPage() {
       }, []) || []
 
   const [activeTab, setActiveTab] = useState('lighting')
-  const [lightingControls, setLightingControls] = useState(
-    () =>
-      scene?.lighting?.map((line) => {
+  const [lightingControls, setLightingControls] = useState(() => {
+    const fromScene = scene?.lighting && scene.lighting.length > 0
+    const linesFromScene = fromScene ? scene.lighting : []
+    const linesFromLastProjectScene =
+      project?.scenes?.length &&
+      project.scenes[project.scenes.length - 1]?.lighting?.length
+        ? project.scenes[project.scenes.length - 1].lighting
+        : []
+
+    const baseLinesRaw = fromScene ? linesFromScene : linesFromLastProjectScene
+
+    const baseLines =
+      baseLinesRaw && baseLinesRaw.length > 0 ? baseLinesRaw : ['SS 50%']
+
+    return (
+      baseLines.map((line) => {
         const match = line.match(/(.*?)(\d+)\s*%/)
         const baseLabel = match ? match[1].trim() : line
         const initialLevel = match ? Number(match[2]) : 50
@@ -60,7 +73,8 @@ export default function ProjectDetailPage() {
           showInfo: false,
         }
       }) || []
-  )
+    )
+  })
   const [timeText, setTimeText] = useState(scene?.time || '')
   const [sceneNameText, setSceneNameText] = useState(
     scene?.sceneName || defaultSceneName
@@ -75,7 +89,7 @@ export default function ProjectDetailPage() {
     setTimeText(scene?.time || '')
     setSceneNameText(scene?.sceneName || defaultSceneName)
     setMemoText(scene?.memo || '')
-  }, [scene, defaultSceneName])
+  }, [projectId, sceneId, defaultSceneName])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -101,7 +115,7 @@ export default function ProjectDetailPage() {
       if (!saved) return
 
       const parsed = JSON.parse(saved)
-      if (Array.isArray(parsed.lightingControls)) {
+      if (Array.isArray(parsed.lightingControls) && parsed.lightingControls.length > 0) {
         setLightingControls(parsed.lightingControls)
       }
       if (typeof parsed.memoText === 'string') {
@@ -114,7 +128,7 @@ export default function ProjectDetailPage() {
         setSceneNameText(parsed.sceneName)
       }
     } catch {}
-  }, [projectId, sceneId, scene])
+  }, [projectId, sceneId])
 
   useEffect(() => {
     if (!scene) return
@@ -145,7 +159,6 @@ export default function ProjectDetailPage() {
   }, [
     projectId,
     sceneId,
-    scene,
     lightingControls,
     memoText,
     timeText,

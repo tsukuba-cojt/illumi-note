@@ -18,6 +18,8 @@ function getSceneDisplayData(projectId, scene) {
 
   let lightingControls = baseLightingControls
   let memoText = scene.memo || ''
+  let timeText = scene.time || '0:00'
+  let sceneName = scene.sceneName || ''
 
   if (typeof window !== 'undefined') {
     try {
@@ -31,11 +33,17 @@ function getSceneDisplayData(projectId, scene) {
         if (typeof parsed.memoText === 'string') {
           memoText = parsed.memoText
         }
+        if (typeof parsed.time === 'string') {
+          timeText = parsed.time
+        }
+        if (typeof parsed.sceneName === 'string') {
+          sceneName = parsed.sceneName
+        }
       }
     } catch {}
   }
 
-  return { lightingControls, memoText }
+  return { lightingControls, memoText, timeText, sceneName }
 }
 
 export default function SceneListPage() {
@@ -67,7 +75,23 @@ export default function SceneListPage() {
   useEffect(() => {
     setScenes(project?.scenes || [])
     // プロジェクトが変わったら表示件数と履歴をリセット
-    setVisibleCount(Math.max(project?.scenes?.length || 0, 3))
+    const baseScenesCount = project?.scenes?.length || 0
+    let initialVisibleCount = Math.max(baseScenesCount, 3)
+
+    if (typeof window !== 'undefined') {
+      try {
+        const key = `sceneList:${projectId}`
+        const saved = window.localStorage.getItem(key)
+        if (saved) {
+          const parsed = JSON.parse(saved)
+          if (typeof parsed.visibleCount === 'number') {
+            initialVisibleCount = Math.max(baseScenesCount, parsed.visibleCount)
+          }
+        }
+      } catch {}
+    }
+
+    setVisibleCount(initialVisibleCount)
     setHistory([])
     setHistoryIndex(-1)
     setUndoOpIndex(null)
@@ -100,6 +124,14 @@ export default function SceneListPage() {
 
     setVisibleCount(nextVisibleCount)
 
+    if (typeof window !== 'undefined') {
+      try {
+        const key = `sceneList:${projectId}`
+        const payload = JSON.stringify({ visibleCount: nextVisibleCount })
+        window.localStorage.setItem(key, payload)
+      } catch {}
+    }
+
     const op = { type: 'addPlaceholder', prevVisibleCount }
 
     const baseHistory =
@@ -114,7 +146,16 @@ export default function SceneListPage() {
     const prevVisibleCount = visibleCount
     if (prevVisibleCount <= scenes.length) return
 
-    setVisibleCount((prev) => Math.max(prev - 1, scenes.length))
+    const nextVisibleCount = Math.max(prevVisibleCount - 1, scenes.length)
+    setVisibleCount(nextVisibleCount)
+
+    if (typeof window !== 'undefined') {
+      try {
+        const key = `sceneList:${projectId}`
+        const payload = JSON.stringify({ visibleCount: nextVisibleCount })
+        window.localStorage.setItem(key, payload)
+      } catch {}
+    }
 
     const op = { type: 'deletePlaceholder', prevVisibleCount }
 
@@ -171,8 +212,24 @@ export default function SceneListPage() {
       })
     } else if (op.type === 'deletePlaceholder') {
       setVisibleCount(op.prevVisibleCount)
+
+      if (typeof window !== 'undefined') {
+        try {
+          const key = `sceneList:${projectId}`
+          const payload = JSON.stringify({ visibleCount: op.prevVisibleCount })
+          window.localStorage.setItem(key, payload)
+        } catch {}
+      }
     } else if (op.type === 'addPlaceholder') {
       setVisibleCount(op.prevVisibleCount)
+
+      if (typeof window !== 'undefined') {
+        try {
+          const key = `sceneList:${projectId}`
+          const payload = JSON.stringify({ visibleCount: op.prevVisibleCount })
+          window.localStorage.setItem(key, payload)
+        } catch {}
+      }
     }
 
     const newIndex = historyIndex - 1
@@ -205,10 +262,26 @@ export default function SceneListPage() {
         return next
       })
     } else if (op.type === 'deletePlaceholder') {
-      setVisibleCount(Math.max(op.prevVisibleCount - 1, scenes.length))
+      const nextVisibleCount = Math.max(op.prevVisibleCount - 1, scenes.length)
+      setVisibleCount(nextVisibleCount)
+      if (typeof window !== 'undefined') {
+        try {
+          const key = `sceneList:${projectId}`
+          const payload = JSON.stringify({ visibleCount: nextVisibleCount })
+          window.localStorage.setItem(key, payload)
+        } catch {}
+      }
       setUndoOpIndex(nextIndex)
     } else if (op.type === 'addPlaceholder') {
-      setVisibleCount(op.prevVisibleCount + 1)
+      const nextVisibleCount = op.prevVisibleCount + 1
+      setVisibleCount(nextVisibleCount)
+      if (typeof window !== 'undefined') {
+        try {
+          const key = `sceneList:${projectId}`
+          const payload = JSON.stringify({ visibleCount: nextVisibleCount })
+          window.localStorage.setItem(key, payload)
+        } catch {}
+      }
     }
 
     setHistoryIndex(nextIndex)
@@ -348,9 +421,23 @@ export default function SceneListPage() {
           const isPlaceholder = !scene
           const sceneIdForLink = scene?.id ?? `placeholder-${index + 1}`
           const key = scene?.id ?? sceneIdForLink
-          const display = scene ? getSceneDisplayData(project.id, scene) : null
-          const sceneName = scene?.sceneName ?? `SCENE ${index + 1}`
 
+          const baseSceneForDisplay =
+            scene || {
+              id: sceneIdForLink,
+              time: '0:00',
+              sceneName: `SCENE ${index + 1}`,
+              lighting:
+                scenes.length > 0
+                  ? scenes[scenes.length - 1].lighting
+                  : ['SS 50%'],
+              memo: '',
+            }
+
+          const display = getSceneDisplayData(project.id, baseSceneForDisplay)
+          const timeText = display.timeText || baseSceneForDisplay.time || '0:00'
+          const sceneName =
+            display.sceneName || baseSceneForDisplay.sceneName || `SCENE ${index + 1}`
           const isDragOver = dragOverIndex === index && !!draggingSceneId
 
           const card = (
@@ -368,7 +455,7 @@ export default function SceneListPage() {
                 <div className="project-detail-fields">
                   <div className="project-detail-field">
                     <span className="project-detail-field-label">TIME</span>
-                    <div className="project-detail-field-box">{scene?.time ?? ''}</div>
+                    <div className="project-detail-field-box">{timeText}</div>
                   </div>
                   <div className="project-detail-field">
                     <span className="project-detail-field-label">SCENE NAME</span>
@@ -387,40 +474,39 @@ export default function SceneListPage() {
                 </div>
 
                 <div className="scene-card-side">
-                  {scene ? (
-                    <>
-                      <div className="scene-card-panel">
-                        <div className="project-detail-panel-title">Lighting</div>
-                        <ul className="scene-card-lighting-list">
-                          {display.lightingControls.map((light, i) => (
-                            <li key={i} className="scene-card-lighting-item">
-                              <span className="scene-card-lighting-label">
-                                {light.label || `Light ${i + 1}`}
-                              </span>
-                              <span className="scene-card-lighting-level">
-                                {typeof light.level === 'number' ? `${light.level}%` : ''}
-                              </span>
-                              <span
-                                className="scene-card-lighting-color"
-                                style={{ backgroundColor: light.color || '#ffffff' }}
-                              />
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                      <div className="scene-card-panel">
-                        <div className="project-detail-panel-title">MEMO</div>
-                        <p className="scene-card-memo">
-                          {display.memoText || 'メモはまだありません。'}
-                        </p>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="scene-card-panel" />
-                      <div className="scene-card-panel" />
-                    </>
-                  )}
+                  <div className="scene-card-panel">
+                    <div className="project-detail-panel-title">Lighting</div>
+                    {display.lightingControls.length > 0 ? (
+                      <ul className="scene-card-lighting-list">
+                        {display.lightingControls.map((light, i) => (
+                          <li key={i} className="scene-card-lighting-item">
+                            <span className="scene-card-lighting-label">
+                              {light.label || `Light ${i + 1}`}
+                            </span>
+                            <span className="scene-card-lighting-level">
+                              {typeof light.level === 'number' ? `${light.level}%` : ''}
+                            </span>
+                            <span
+                              className="scene-card-lighting-color"
+                              style={{ backgroundColor: light.color || '#ffffff' }}
+                            />
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="scene-card-memo">ライティング情報がありません。</p>
+                    )}
+                  </div>
+                  <div className="scene-card-panel">
+                    <div className="project-detail-panel-title">MEMO</div>
+                    {display.memoText ? (
+                      <p className="scene-card-memo">{display.memoText}</p>
+                    ) : (
+                      <p className="scene-card-memo scene-card-memo-placeholder">
+                        ここにメモを入力してください
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
             </article>
