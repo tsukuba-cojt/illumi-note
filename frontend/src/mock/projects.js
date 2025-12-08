@@ -13,6 +13,7 @@ export const projects = [
         members: [
           { id: 'm1', name: '山田 太郎' },
           { id: 'm2', name: '佐藤 花子' },
+          { id: 'm3', name: '鈴木 健' },
         ],
       },
       {
@@ -23,7 +24,7 @@ export const projects = [
         memo: '本編序盤のシーン。キャストの動きに合わせたライティング。',
         members: [
           { id: 'm1', name: '山田 太郎' },
-          { id: 'm2', name: '佐藤 花子' },
+          { id: 'm4', name: '中村 玲' },
         ],
       },
       {
@@ -34,7 +35,7 @@ export const projects = [
         memo: '中盤の静かなシーン。落ち着いた色味で演出。',
         members: [
           { id: 'm1', name: '山田 太郎' },
-          { id: 'm2', name: '佐藤 花子' },
+          { id: 'm5', name: '小林 陽子' },
         ],
       },
       {

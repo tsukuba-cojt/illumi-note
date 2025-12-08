@@ -13,7 +13,37 @@ function getLightingInfoText(label) {
 export default function ProjectDetailPage() {
   const { projectId, sceneId } = useParams()
 
-  const { project, scene } = findScene(projectId, sceneId)
+  const { project, scene: foundScene } = findScene(projectId, sceneId)
+
+  const placeholderMatch = sceneId?.match(/^placeholder-(\d+)$/)
+
+  const placeholderIndex = placeholderMatch ? Number(placeholderMatch[1]) : null
+
+  const defaultSceneName =
+    foundScene?.sceneName ??
+    (placeholderIndex ? `SCENE ${placeholderIndex}` : 'NEW SCENE')
+
+  const scene =
+    foundScene ??
+    (project && {
+      id: sceneId,
+      time: '',
+      sceneName: defaultSceneName,
+      lighting: [],
+      memo: '',
+      members: [],
+    })
+
+  const projectMembers =
+    project?.scenes
+      ?.flatMap((s) => s.members || [])
+      .reduce((unique, member) => {
+        if (!unique.some((m) => m.id === member.id)) {
+          unique.push(member)
+        }
+        return unique
+      }, []) || []
+
   const [activeTab, setActiveTab] = useState('lighting')
   const [lightingControls, setLightingControls] = useState(
     () =>
@@ -31,11 +61,35 @@ export default function ProjectDetailPage() {
         }
       }) || []
   )
-  const [memoText, setMemoText] = useState(scene.memo || '')
+  const [timeText, setTimeText] = useState(scene?.time || '')
+  const [sceneNameText, setSceneNameText] = useState(
+    scene?.sceneName || defaultSceneName
+  )
+  const [memoText, setMemoText] = useState(scene?.memo || '')
+  const [lastUpdatedText, setLastUpdatedText] = useState(
+    project?.updatedAt || ''
+  )
+  const [hasUserEdited, setHasUserEdited] = useState(false)
 
   useEffect(() => {
-    setMemoText(scene.memo || '')
-  }, [scene])
+    setTimeText(scene?.time || '')
+    setSceneNameText(scene?.sceneName || defaultSceneName)
+    setMemoText(scene?.memo || '')
+  }, [scene, defaultSceneName])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    try {
+      const key = `projectLastUpdatedAt:${projectId}`
+      const saved = window.localStorage.getItem(key)
+      if (saved) {
+        setLastUpdatedText(saved)
+      } else if (project?.updatedAt) {
+        setLastUpdatedText(project.updatedAt)
+      }
+    } catch {}
+  }, [projectId, project])
 
   useEffect(() => {
     if (!scene) return
@@ -53,28 +107,60 @@ export default function ProjectDetailPage() {
       if (typeof parsed.memoText === 'string') {
         setMemoText(parsed.memoText)
       }
+      if (typeof parsed.time === 'string') {
+        setTimeText(parsed.time)
+      }
+      if (typeof parsed.sceneName === 'string') {
+        setSceneNameText(parsed.sceneName)
+      }
     } catch {}
   }, [projectId, sceneId, scene])
 
   useEffect(() => {
     if (!scene) return
     if (typeof window === 'undefined') return
+    if (!hasUserEdited) return
 
     try {
       const key = `sceneSettings:${projectId}:${sceneId}`
-      const payload = JSON.stringify({ lightingControls, memoText })
+      const payload = JSON.stringify({
+        lightingControls,
+        memoText,
+        time: timeText,
+        sceneName: sceneNameText,
+      })
       window.localStorage.setItem(key, payload)
-    } catch {}
-  }, [projectId, sceneId, scene, lightingControls, memoText])
 
-  if (!project || !scene) {
+      const now = new Date()
+      const yyyy = now.getFullYear()
+      const mm = String(now.getMonth() + 1).padStart(2, '0')
+      const dd = String(now.getDate()).padStart(2, '0')
+      const hh = String(now.getHours()).padStart(2, '0')
+      const min = String(now.getMinutes()).padStart(2, '0')
+      const formatted = `最終更新: ${yyyy}-${mm}-${dd} ${hh}:${min}`
+
+      window.localStorage.setItem(`projectLastUpdatedAt:${projectId}`, formatted)
+      setLastUpdatedText(formatted)
+    } catch {}
+  }, [
+    projectId,
+    sceneId,
+    scene,
+    lightingControls,
+    memoText,
+    timeText,
+    sceneNameText,
+    hasUserEdited,
+  ])
+
+  if (!project) {
     return (
       <div className="page page-project-detail">
         <header className="projects-header">
           <h1 className="projects-title">シーンが見つかりません</h1>
           <div className="projects-actions">
             <Link to={`/projects/${projectId}`} className="projects-new-button">
-              一覧に戻る
+              シーン一覧に戻る
             </Link>
           </div>
         </header>
@@ -88,7 +174,7 @@ export default function ProjectDetailPage() {
         <h1 className="projects-title">{project.name}</h1>
         <div className="projects-actions">
           <Link to={`/projects/${projectId}`} className="projects-new-button">
-            一覧に戻る
+            シーン一覧に戻る
           </Link>
         </div>
       </header>
@@ -98,25 +184,50 @@ export default function ProjectDetailPage() {
           <div className="project-detail-fields">
             <div className="project-detail-field">
               <span className="project-detail-field-label">TIME</span>
-              <div className="project-detail-field-box">{scene.time}</div>
+              <div className="project-detail-field-box">
+                <input
+                  type="text"
+                  value={timeText}
+                  onChange={(e) => {
+                    setTimeText(e.target.value)
+                    setHasUserEdited(true)
+                  }}
+                />
+              </div>
             </div>
             <div className="project-detail-field">
               <span className="project-detail-field-label">SCENE NAME</span>
-              <div className="project-detail-field-box">{scene.sceneName}</div>
+              <div className="project-detail-field-box">
+                <input
+                  type="text"
+                  value={sceneNameText}
+                  onChange={(e) => {
+                    setSceneNameText(e.target.value)
+                    setHasUserEdited(true)
+                  }}
+                />
+              </div>
             </div>
           </div>
 
           <div className="project-detail-members">
             <div className="project-detail-members-title">メンバー</div>
             <div className="project-detail-members-list">
-              {scene.members?.map((member) => (
-                <div key={member.id} className="project-detail-member-pill">
-                  <span className="project-detail-member-name">{member.name}</span>
-                  {member.role && (
-                    <span className="project-detail-member-role">{member.role}</span>
-                  )}
+              {projectMembers.slice(0, 4).map((member) => {
+                const familyName = member.name?.split(' ')[0] || member.name
+                return (
+                  <div key={member.id} className="project-detail-member-pill">
+                    <span className="project-detail-member-name">{familyName}</span>
+                  </div>
+                )
+              })}
+              {projectMembers.length > 4 && (
+                <div className="project-detail-member-pill">
+                  <span className="project-detail-member-name">
+                    +{projectMembers.length - 4}
+                  </span>
                 </div>
-              ))}
+              )}
             </div>
           </div>
         </div>
@@ -162,13 +273,14 @@ export default function ProjectDetailPage() {
                           <button
                             type="button"
                             className="lighting-info-button"
-                            onClick={() =>
+                            onClick={() => {
                               setLightingControls((prev) =>
                                 prev.map((c, i) =>
                                   i === index ? { ...c, showInfo: !c.showInfo } : c
                                 )
                               )
-                            }
+                              setHasUserEdited(true)
+                            }}
                           >
                             i
                           </button>
@@ -179,13 +291,14 @@ export default function ProjectDetailPage() {
                                 ? ' lighting-toggle-on'
                                 : ' lighting-toggle-off'
                             }`}
-                            onClick={() =>
+                            onClick={() => {
                               setLightingControls((prev) =>
                                 prev.map((c, i) =>
                                   i === index ? { ...c, isOn: !c.isOn } : c
                                 )
                               )
-                            }
+                              setHasUserEdited(true)
+                            }}
                           >
                             {control.isOn ? 'ON' : 'OFF'}
                           </button>
@@ -205,7 +318,7 @@ export default function ProjectDetailPage() {
                             min="0"
                             max="100"
                             value={control.level}
-                            onChange={(e) =>
+                            onChange={(e) => {
                               setLightingControls((prev) =>
                                 prev.map((c, i) =>
                                   i === index
@@ -213,7 +326,8 @@ export default function ProjectDetailPage() {
                                     : c
                                 )
                               )
-                            }
+                              setHasUserEdited(true)
+                            }}
                           />
                           <span className="lighting-level-value">{control.level}</span>
                         </div>
@@ -222,13 +336,14 @@ export default function ProjectDetailPage() {
                           <input
                             type="color"
                             value={control.color}
-                            onChange={(e) =>
+                            onChange={(e) => {
                               setLightingControls((prev) =>
                                 prev.map((c, i) =>
                                   i === index ? { ...c, color: e.target.value } : c
                                 )
                               )
-                            }
+                              setHasUserEdited(true)
+                            }}
                           />
                         </div>
                       </div>
@@ -239,7 +354,7 @@ export default function ProjectDetailPage() {
 
               {activeTab === 'members' && (
                 <div className="project-detail-members-list">
-                  {scene.members?.map((member) => (
+                  {projectMembers.map((member) => (
                     <div key={member.id} className="project-detail-member-pill">
                       <span className="project-detail-member-name">{member.name}</span>
                       {member.role && (
@@ -262,7 +377,10 @@ export default function ProjectDetailPage() {
               <textarea
                 className="project-detail-memo"
                 value={memoText}
-                onChange={(e) => setMemoText(e.target.value)}
+                onChange={(e) => {
+                  setMemoText(e.target.value)
+                  setHasUserEdited(true)
+                }}
                 placeholder="メモを入力してください"
                 rows={4}
               />
@@ -271,7 +389,7 @@ export default function ProjectDetailPage() {
         </div>
 
         <p className="project-card-meta project-detail-updated">
-          {project.updatedAt}
+          {lastUpdatedText}
         </p>
       </section>
     </div>
