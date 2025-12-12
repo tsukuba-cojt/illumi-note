@@ -2,6 +2,8 @@ import { useParams, Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { findScene } from '../mock/projects.js'
 
+const DISCRETE_LEVELS = [0, 30, 50, 70, 100]
+
 function getLightingInfoText(label) {
   if (!label) return 'このライトの説明です。'
   if (label.startsWith('SS')) return 'このシーンのメインの明るさ（％）を表します。'
@@ -46,7 +48,9 @@ export default function ProjectDetailPage() {
     const baseLinesRaw = fromScene ? linesFromScene : linesFromLastProjectScene
 
     const baseLines =
-      baseLinesRaw && baseLinesRaw.length > 0 ? baseLinesRaw : ['SS 50%']
+      baseLinesRaw && baseLinesRaw.length > 0
+        ? baseLinesRaw
+        : ['SS 50%', 'ホリ', 'ピンスポットライト']
 
     return (
       baseLines.map((line) => {
@@ -237,7 +241,13 @@ export default function ProjectDetailPage() {
                       ライティング情報がありません。
                     </p>
                   )}
-                  {lightingControls.map((control, index) => (
+                  {lightingControls.map((control, index) => {
+                    const levelIndex =
+                      DISCRETE_LEVELS.indexOf(control.level) === -1
+                        ? 0
+                        : DISCRETE_LEVELS.indexOf(control.level)
+
+                    return (
                     <div
                       key={index}
                       className={`lighting-control-row${
@@ -295,22 +305,43 @@ export default function ProjectDetailPage() {
 
                       <div className="lighting-control-body">
                         <div className="lighting-slider-group">
-                          <input
-                            type="range"
-                            min="0"
-                            max="100"
-                            value={control.level}
-                            onChange={(e) => {
-                              setLightingControls((prev) =>
-                                prev.map((c, i) =>
-                                  i === index
-                                    ? { ...c, level: Number(e.target.value) }
-                                    : c
+                          <div className="lighting-slider-track">
+                            <input
+                              type="range"
+                              min="0"
+                              max={DISCRETE_LEVELS.length - 1}
+                              step="1"
+                              value={levelIndex}
+                              onChange={(e) => {
+                                const newIndex = Number(e.target.value)
+                                const newLevel =
+                                  DISCRETE_LEVELS[newIndex] ?? DISCRETE_LEVELS[0]
+
+                                setLightingControls((prev) =>
+                                  prev.map((c, i) =>
+                                    i === index
+                                      ? { ...c, level: newLevel }
+                                      : c
+                                  )
                                 )
-                              )
-                              setHasUserEdited(true)
-                            }}
-                          />
+                                setHasUserEdited(true)
+                              }}
+                            />
+                            <div className="lighting-slider-ticks">
+                              {DISCRETE_LEVELS.map((value) => (
+                                <span
+                                  key={value}
+                                  className={`lighting-slider-tick${
+                                    value === control.level
+                                      ? ' lighting-slider-tick-active'
+                                      : ''
+                                  }`}
+                                >
+                                  {value}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
                           <span className="lighting-level-value">{control.level}</span>
                         </div>
 
@@ -330,7 +361,8 @@ export default function ProjectDetailPage() {
                         </div>
                       </div>
                     </div>
-                  ))}
+                    )
+                  })}
                 </div>
               )}
 

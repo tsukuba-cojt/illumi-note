@@ -403,7 +403,7 @@ export default function SceneListPage() {
               lighting:
                 scenes.length > 0
                   ? scenes[scenes.length - 1].lighting
-                  : ['SS 50%'],
+                  : ['SS 50%', 'ホリ', 'ピンスポットライト'],
               memo: '',
             }
 
