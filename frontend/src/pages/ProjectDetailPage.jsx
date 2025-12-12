@@ -31,18 +31,7 @@ export default function ProjectDetailPage() {
       sceneName: defaultSceneName,
       lighting: [],
       memo: '',
-      members: [],
     })
-
-  const projectMembers =
-    project?.scenes
-      ?.flatMap((s) => s.members || [])
-      .reduce((unique, member) => {
-        if (!unique.some((m) => m.id === member.id)) {
-          unique.push(member)
-        }
-        return unique
-      }, []) || []
 
   const [activeTab, setActiveTab] = useState('lighting')
   const [lightingControls, setLightingControls] = useState(() => {
@@ -223,26 +212,6 @@ export default function ProjectDetailPage() {
             </div>
           </div>
 
-          <div className="project-detail-members">
-            <div className="project-detail-members-title">メンバー</div>
-            <div className="project-detail-members-list">
-              {projectMembers.slice(0, 4).map((member) => {
-                const familyName = member.name?.split(' ')[0] || member.name
-                return (
-                  <div key={member.id} className="project-detail-member-pill">
-                    <span className="project-detail-member-name">{familyName}</span>
-                  </div>
-                )
-              })}
-              {projectMembers.length > 4 && (
-                <div className="project-detail-member-pill">
-                  <span className="project-detail-member-name">
-                    +{projectMembers.length - 4}
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
         </div>
 
         <div className="project-detail-layout">
@@ -360,19 +329,6 @@ export default function ProjectDetailPage() {
                           />
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {activeTab === 'members' && (
-                <div className="project-detail-members-list">
-                  {projectMembers.map((member) => (
-                    <div key={member.id} className="project-detail-member-pill">
-                      <span className="project-detail-member-name">{member.name}</span>
-                      {member.role && (
-                        <span className="project-detail-member-role">{member.role}</span>
-                      )}
                     </div>
                   ))}
                 </div>

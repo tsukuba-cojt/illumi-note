@@ -8,9 +8,6 @@ export default function SideNav() {
           <NavLink to="/projects">プロジェクト</NavLink>
         </li>
         <li>
-          <NavLink to="/library">ライブラリ</NavLink>
-        </li>
-        <li>
           <NavLink to="/stage">ステージ</NavLink>
         </li>
         <li>

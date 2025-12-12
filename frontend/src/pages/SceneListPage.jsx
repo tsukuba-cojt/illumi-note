@@ -52,16 +52,6 @@ export default function SceneListPage() {
 
   const [scenes, setScenes] = useState(project?.scenes || [])
 
-  const projectMembers =
-    project?.scenes
-      ?.flatMap((scene) => scene.members || [])
-      .reduce((unique, member) => {
-        if (!unique.some((m) => m.id === member.id)) {
-          unique.push(member)
-        }
-        return unique
-      }, []) || []
-
   const [visibleCount, setVisibleCount] = useState(() =>
     Math.max(project?.scenes?.length || 0, 3)
   )
@@ -392,23 +382,6 @@ export default function SceneListPage() {
           <h1 className="projects-title">{project.name}</h1>
         </div>
         <div className="projects-actions scene-list-header-actions">
-          <div className="project-detail-members-list scene-list-project-members">
-            {projectMembers.slice(0, 4).map((member) => {
-              const familyName = member.name?.split(' ')[0] || member.name
-              return (
-                <div key={member.id} className="project-detail-member-pill">
-                  <span className="project-detail-member-name">{familyName}</span>
-                </div>
-              )
-            })}
-            {projectMembers.length > 4 && (
-              <div className="project-detail-member-pill">
-                <span className="project-detail-member-name">
-                  +{projectMembers.length - 4}
-                </span>
-              </div>
-            )}
-          </div>
           <Link to="/projects" className="projects-new-button">
             プロジェクト一覧に戻る
           </Link>

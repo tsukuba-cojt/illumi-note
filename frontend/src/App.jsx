@@ -4,9 +4,10 @@ import MainLayout from './layouts/MainLayout.jsx'
 import LoginPage from './pages/LoginPage.jsx'
 import RegisterPage from './pages/RegisterPage.jsx'
 import ProjectListPage from './pages/ProjectListPage.jsx'
+import NewProjectPage from './pages/NewProjectPage.jsx'
 import SceneListPage from './pages/SceneListPage.jsx'
 import ProjectDetailPage from './pages/ProjectDetailPage.jsx'
-import LibraryPage from './pages/LibraryPage.jsx'
+import StageView from './pages/StageView.jsx'
 import StagePage from './pages/StagePage.jsx'
 import NotificationsPage from './pages/NotificationsPage.jsx'
 import UserProfilePage from './pages/UserProfilePage.jsx'
@@ -24,13 +25,14 @@ function App() {
 
       <Route element={<MainLayout />}>
         <Route path="/projects" element={<ProjectListPage />} />
+        <Route path="/projects/new" element={<NewProjectPage />} />
         <Route path="/projects/:projectId" element={<SceneListPage />} />
         <Route
           path="/projects/:projectId/scenes/:sceneId"
           element={<ProjectDetailPage />}
         />
-        <Route path="/library" element={<LibraryPage />} />
-        <Route path="/stage" element={<StagePage />} />
+        <Route path="/stage" element={<StageView />} />
+        <Route path="/stage-select" element={<StagePage />} />
         <Route path="/notifications" element={<NotificationsPage />} />
         <Route path="/profile" element={<UserProfilePage />} />
       </Route>

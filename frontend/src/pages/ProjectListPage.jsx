@@ -7,7 +7,9 @@ export default function ProjectListPage() {
       <header className="projects-header">
         <h1 className="projects-title">プロジェクト</h1>
         <div className="projects-actions">
-          <button className="projects-new-button">＋ 新規プロジェクト</button>
+          <Link to="/projects/new" className="projects-new-button">
+            ＋ 新規プロジェクト
+          </Link>
         </div>
       </header>
 

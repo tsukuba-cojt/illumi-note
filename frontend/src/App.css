@@ -339,6 +339,15 @@
   overflow: hidden;
 }
 
+.page-stage .project-detail-stage {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.page-stage .project-detail-stage-placeholder {
+  aspect-ratio: 16 / 7;
+}
+
 .project-detail-stage-placeholder {
   aspect-ratio: 16 / 9;
   background-color: #111827;
@@ -354,6 +363,25 @@
 .project-detail-stage-note {
   font-size: 12px;
   color: #d1d5db;
+}
+
+.stageview-buttons {
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.stageview-button {
+  min-width: 120px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 1px solid #d4d4d8;
+  background-color: #bbbec3;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: default;
 }
 
 .project-detail-side {
