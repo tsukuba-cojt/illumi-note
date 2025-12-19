@@ -2,7 +2,23 @@ import { useParams, Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { findProject } from '../mock/projects.js'
 
-function getSceneDisplayData(projectId, scene) {
+async function fetchLightSettings(projectId, sceneId) {
+  const res = await fetch(
+    `/api/projects/${encodeURIComponent(projectId)}/scenes/${encodeURIComponent(sceneId)}/light`,
+    {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+      },
+    }
+  )
+
+  if (res.status === 404) return null
+  if (!res.ok) throw new Error(`GET light failed: ${res.status}`)
+  return await res.json()
+}
+
+function getSceneDisplayData(projectId, scene, serverData) {
   const baseLightingControls =
     scene.lighting?.map((line) => {
       const match = line.match(/(.*?)(\d+)\s*%/)
@@ -20,6 +36,22 @@ function getSceneDisplayData(projectId, scene) {
   let memoText = scene.memo || ''
   let timeText = scene.time || '0:00'
   let sceneName = scene.sceneName || ''
+
+  if (serverData) {
+    if (Array.isArray(serverData.lightingControls)) {
+      lightingControls = serverData.lightingControls
+    }
+    if (typeof serverData.memoText === 'string') {
+      memoText = serverData.memoText
+    }
+    if (typeof serverData.time === 'string') {
+      timeText = serverData.time
+    }
+    if (typeof serverData.sceneName === 'string') {
+      sceneName = serverData.sceneName
+    }
+    return { lightingControls, memoText, timeText, sceneName }
+  }
 
   if (typeof window !== 'undefined') {
     try {
@@ -51,6 +83,7 @@ export default function SceneListPage() {
   const project = findProject(projectId)
 
   const [scenes, setScenes] = useState(project?.scenes || [])
+  const [sceneLightCache, setSceneLightCache] = useState({})
 
   const [visibleCount, setVisibleCount] = useState(() =>
     Math.max(project?.scenes?.length || 0, 3)
@@ -64,6 +97,7 @@ export default function SceneListPage() {
 
   useEffect(() => {
     setScenes(project?.scenes || [])
+    setSceneLightCache({})
     // プロジェクトが変わったら表示件数と履歴をリセット
     const baseScenesCount = project?.scenes?.length || 0
     let initialVisibleCount = Math.max(baseScenesCount, 3)
@@ -89,6 +123,41 @@ export default function SceneListPage() {
     setDraggingSceneId(null)
     setDragOverIndex(null)
   }, [projectId, project])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (!projectId) return
+
+    let cancelled = false
+    const idsToFetch = Array.from({ length: visibleCount })
+      .map((_, index) => scenes[index]?.id)
+      .filter(Boolean)
+
+    idsToFetch.forEach((sceneId) => {
+      if (sceneLightCache[sceneId] !== undefined) return
+
+      ;(async () => {
+        try {
+          const data = await fetchLightSettings(projectId, sceneId)
+          if (cancelled) return
+          setSceneLightCache((prev) => ({
+            ...prev,
+            [sceneId]: data,
+          }))
+        } catch {
+          if (cancelled) return
+          setSceneLightCache((prev) => ({
+            ...prev,
+            [sceneId]: null,
+          }))
+        }
+      })()
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [projectId, scenes, visibleCount, sceneLightCache])
 
   const handleDeleteScene = (scene) => {
     if (!scene) return
@@ -407,7 +476,11 @@ export default function SceneListPage() {
               memo: '',
             }
 
-          const display = getSceneDisplayData(project.id, baseSceneForDisplay)
+          const display = getSceneDisplayData(
+            project.id,
+            baseSceneForDisplay,
+            scene ? sceneLightCache[scene.id] : null
+          )
           const timeText = display.timeText || baseSceneForDisplay.time || '0:00'
           const sceneName =
             display.sceneName || baseSceneForDisplay.sceneName || `SCENE ${index + 1}`

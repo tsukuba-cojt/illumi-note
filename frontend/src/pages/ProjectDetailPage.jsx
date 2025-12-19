@@ -3,6 +3,32 @@ import { useState, useEffect } from 'react'
 import { findScene } from '../mock/projects.js'
 
 const DISCRETE_LEVELS = [0, 30, 50, 70, 100]
+const SAVE_DEBOUNCE_MS = 500
+
+async function fetchLightSettings(projectId, sceneId) {
+  const res = await fetch(`/api/projects/${encodeURIComponent(projectId)}/scenes/${encodeURIComponent(sceneId)}/light`, {
+    method: 'GET',
+    headers: {
+      Accept: 'application/json',
+    },
+  })
+
+  if (res.status === 404) return null
+  if (!res.ok) throw new Error(`GET light failed: ${res.status}`)
+  return await res.json()
+}
+
+async function putLightSettings(projectId, sceneId, payload) {
+  const res = await fetch(`/api/projects/${encodeURIComponent(projectId)}/scenes/${encodeURIComponent(sceneId)}/light`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: JSON.stringify(payload),
+  })
+  if (!res.ok) throw new Error(`PUT light failed: ${res.status}`)
+}
 
 function getLightingInfoText(label) {
   if (!label) return 'このライトの説明です。'
@@ -102,25 +128,58 @@ export default function ProjectDetailPage() {
     if (!scene) return
     if (typeof window === 'undefined') return
 
-    try {
-      const key = `sceneSettings:${projectId}:${sceneId}`
-      const saved = window.localStorage.getItem(key)
-      if (!saved) return
+    let cancelled = false
 
-      const parsed = JSON.parse(saved)
-      if (Array.isArray(parsed.lightingControls) && parsed.lightingControls.length > 0) {
-        setLightingControls(parsed.lightingControls)
-      }
-      if (typeof parsed.memoText === 'string') {
-        setMemoText(parsed.memoText)
-      }
-      if (typeof parsed.time === 'string') {
-        setTimeText(parsed.time)
-      }
-      if (typeof parsed.sceneName === 'string') {
-        setSceneNameText(parsed.sceneName)
-      }
-    } catch {}
+    ;(async () => {
+      try {
+        const apiData = await fetchLightSettings(projectId, sceneId)
+        if (cancelled) return
+        if (apiData) {
+          if (
+            Array.isArray(apiData.lightingControls) &&
+            apiData.lightingControls.length > 0
+          ) {
+            setLightingControls(apiData.lightingControls)
+          }
+          if (typeof apiData.memoText === 'string') {
+            setMemoText(apiData.memoText)
+          }
+          if (typeof apiData.time === 'string') {
+            setTimeText(apiData.time)
+          }
+          if (typeof apiData.sceneName === 'string') {
+            setSceneNameText(apiData.sceneName)
+          }
+          return
+        }
+      } catch {}
+
+      try {
+        const key = `sceneSettings:${projectId}:${sceneId}`
+        const saved = window.localStorage.getItem(key)
+        if (!saved) return
+        const parsed = JSON.parse(saved)
+        if (
+          Array.isArray(parsed.lightingControls) &&
+          parsed.lightingControls.length > 0
+        ) {
+          setLightingControls(parsed.lightingControls)
+        }
+        if (typeof parsed.memoText === 'string') {
+          setMemoText(parsed.memoText)
+        }
+        if (typeof parsed.time === 'string') {
+          setTimeText(parsed.time)
+        }
+        if (typeof parsed.sceneName === 'string') {
+          setSceneNameText(parsed.sceneName)
+        }
+      } catch {}
+    })()
+
+    return () => {
+      cancelled = true
+    }
   }, [projectId, sceneId])
 
   useEffect(() => {
@@ -128,27 +187,47 @@ export default function ProjectDetailPage() {
     if (typeof window === 'undefined') return
     if (!hasUserEdited) return
 
+    const payloadObject = {
+      lightingControls,
+      memoText,
+      time: timeText,
+      sceneName: sceneNameText,
+    }
+
     try {
       const key = `sceneSettings:${projectId}:${sceneId}`
-      const payload = JSON.stringify({
-        lightingControls,
-        memoText,
-        time: timeText,
-        sceneName: sceneNameText,
-      })
-      window.localStorage.setItem(key, payload)
-
-      const now = new Date()
-      const yyyy = now.getFullYear()
-      const mm = String(now.getMonth() + 1).padStart(2, '0')
-      const dd = String(now.getDate()).padStart(2, '0')
-      const hh = String(now.getHours()).padStart(2, '0')
-      const min = String(now.getMinutes()).padStart(2, '0')
-      const formatted = `最終更新: ${yyyy}-${mm}-${dd} ${hh}:${min}`
-
-      window.localStorage.setItem(`projectLastUpdatedAt:${projectId}`, formatted)
-      setLastUpdatedText(formatted)
+      window.localStorage.setItem(key, JSON.stringify(payloadObject))
     } catch {}
+
+    const now = new Date()
+    const yyyy = now.getFullYear()
+    const mm = String(now.getMonth() + 1).padStart(2, '0')
+    const dd = String(now.getDate()).padStart(2, '0')
+    const hh = String(now.getHours()).padStart(2, '0')
+    const min = String(now.getMinutes()).padStart(2, '0')
+    const formatted = `最終更新: ${yyyy}-${mm}-${dd} ${hh}:${min}`
+
+    try {
+      window.localStorage.setItem(`projectLastUpdatedAt:${projectId}`, formatted)
+    } catch {}
+
+    setLastUpdatedText(formatted)
+
+    let cancelled = false
+    const timer = window.setTimeout(() => {
+      ;(async () => {
+        try {
+          await putLightSettings(projectId, sceneId, payloadObject)
+        } catch {
+          if (cancelled) return
+        }
+      })()
+    }, SAVE_DEBOUNCE_MS)
+
+    return () => {
+      cancelled = true
+      window.clearTimeout(timer)
+    }
   }, [
     projectId,
     sceneId,
