@@ -433,6 +433,9 @@
   margin: 0;
   padding-left: 18px;
   font-size: 13px;
+  max-height: 380px;
+  overflow-y: auto;
+  padding-right: 4px;
 }
 
 .project-detail-lighting-list li + li {
@@ -858,4 +861,78 @@
 .scene-history-button:disabled {
   opacity: 0.4;
   cursor: default;
+}
+
+@media print {
+  body {
+    margin: 0;
+    background-color: #ffffff;
+  }
+
+  #root,
+  .layout,
+  .layout-content {
+    min-height: auto;
+    box-shadow: none;
+  }
+
+  .layout-content {
+    padding: 16px;
+  }
+
+  .page {
+    max-width: none;
+    margin: 0;
+  }
+
+  .page-scene-list {
+    box-shadow: none;
+    border-radius: 0;
+    padding: 8px 16px 16px;
+  }
+
+  .projects-header {
+    margin-bottom: 8px;
+  }
+
+  .scene-list {
+    gap: 8px;
+  }
+
+  .scene-card {
+    padding: 8px 10px 10px;
+    border-radius: 4px;
+  }
+
+  .scene-card-body {
+    gap: 8px;
+  }
+
+  .scene-card-stage {
+    border-radius: 4px;
+  }
+
+  .scene-card .project-detail-stage-placeholder {
+    aspect-ratio: 3 / 1;
+    font-size: 12px;
+  }
+
+  .scene-card-panel {
+    padding: 8px 9px 9px;
+  }
+
+  .scene-card-lighting-list {
+    margin-top: 4px;
+    font-size: 10px;
+  }
+
+  .scene-card-memo {
+    margin-top: 4px;
+    font-size: 10px;
+  }
+
+  .scene-undo-toast,
+  .scene-history-controls {
+    display: none !important;
+  }
 }

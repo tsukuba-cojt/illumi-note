@@ -4,6 +4,83 @@ import { findScene } from '../mock/projects.js'
 
 const DISCRETE_LEVELS = [0, 30, 50, 70, 100]
 const SAVE_DEBOUNCE_MS = 500
+const DEFAULT_LIGHT_LABELS = [
+  '1S',
+  '2S',
+  '1B',
+  '2B',
+  'CL D',
+  'CL U',
+  'FS L',
+  'FS R',
+  'CL R',
+  'CL CTR',
+  'CL L',
+  'SS D_L',
+  'SS D_R',
+  'SS M_L',
+  'SS M_R',
+  'SS U_L',
+  'SS U_R',
+  'UH',
+  'LH',
+]
+
+function createDefaultLightingControls() {
+  return DEFAULT_LIGHT_LABELS.map((label) => ({
+    label,
+    level: 50,
+    color: '#ffffff',
+    isOn: true,
+    showInfo: false,
+  }))
+}
+
+function normalizeLightingControls(rawControls) {
+  if (!Array.isArray(rawControls) || rawControls.length === 0) {
+    return createDefaultLightingControls()
+  }
+
+  const byLabel = new Map()
+
+  rawControls.forEach((item) => {
+    if (!item || typeof item !== 'object') return
+    const label = item.label
+    if (typeof label !== 'string') return
+    if (!DEFAULT_LIGHT_LABELS.includes(label)) return
+    if (byLabel.has(label)) return
+
+    const level =
+      typeof item.level === 'number' ? item.level : 50
+    const color =
+      typeof item.color === 'string' && item.color
+        ? item.color
+        : '#ffffff'
+    const isOn =
+      typeof item.isOn === 'boolean' ? item.isOn : true
+    const showInfo = !!item.showInfo
+
+    byLabel.set(label, {
+      label,
+      level,
+      color,
+      isOn,
+      showInfo,
+    })
+  })
+
+  return DEFAULT_LIGHT_LABELS.map((label) => {
+    const existing = byLabel.get(label)
+    if (existing) return existing
+    return {
+      label,
+      level: 50,
+      color: '#ffffff',
+      isOn: true,
+      showInfo: false,
+    }
+  })
+}
 
 async function fetchLightSettings(projectId, sceneId) {
   const res = await fetch(`/api/projects/${encodeURIComponent(projectId)}/scenes/${encodeURIComponent(sceneId)}/light`, {
@@ -62,38 +139,9 @@ export default function ProjectDetailPage() {
     })
 
   const [activeTab, setActiveTab] = useState('lighting')
-  const [lightingControls, setLightingControls] = useState(() => {
-    const fromScene = scene?.lighting && scene.lighting.length > 0
-    const linesFromScene = fromScene ? scene.lighting : []
-    const linesFromLastProjectScene =
-      project?.scenes?.length &&
-      project.scenes[project.scenes.length - 1]?.lighting?.length
-        ? project.scenes[project.scenes.length - 1].lighting
-        : []
-
-    const baseLinesRaw = fromScene ? linesFromScene : linesFromLastProjectScene
-
-    const baseLines =
-      baseLinesRaw && baseLinesRaw.length > 0
-        ? baseLinesRaw
-        : ['SS 50%', 'ホリ', 'ピンスポットライト']
-
-    return (
-      baseLines.map((line) => {
-        const match = line.match(/(.*?)(\d+)\s*%/)
-        const baseLabel = match ? match[1].trim() : line
-        const initialLevel = match ? Number(match[2]) : 50
-
-        return {
-          label: baseLabel,
-          level: initialLevel,
-          color: '#ffffff',
-          isOn: true,
-          showInfo: false,
-        }
-      }) || []
-    )
-  })
+  const [lightingControls, setLightingControls] = useState(() =>
+    createDefaultLightingControls()
+  )
   const [timeText, setTimeText] = useState(scene?.time || '')
   const [sceneNameText, setSceneNameText] = useState(
     scene?.sceneName || defaultSceneName
@@ -139,7 +187,9 @@ export default function ProjectDetailPage() {
             Array.isArray(apiData.lightingControls) &&
             apiData.lightingControls.length > 0
           ) {
-            setLightingControls(apiData.lightingControls)
+            setLightingControls(
+              normalizeLightingControls(apiData.lightingControls)
+            )
           }
           if (typeof apiData.memoText === 'string') {
             setMemoText(apiData.memoText)
@@ -163,7 +213,9 @@ export default function ProjectDetailPage() {
           Array.isArray(parsed.lightingControls) &&
           parsed.lightingControls.length > 0
         ) {
-          setLightingControls(parsed.lightingControls)
+          setLightingControls(
+            normalizeLightingControls(parsed.lightingControls)
+          )
         }
         if (typeof parsed.memoText === 'string') {
           setMemoText(parsed.memoText)

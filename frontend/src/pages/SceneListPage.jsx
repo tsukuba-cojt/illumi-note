@@ -2,6 +2,75 @@ import { useParams, Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { findProject } from '../mock/projects.js'
 
+const DEFAULT_LIGHT_LABELS = [
+  '1S',
+  '2S',
+  '1B',
+  '2B',
+  'CL D',
+  'CL U',
+  'FS L',
+  'FS R',
+  'CL R',
+  'CL CTR',
+  'CL L',
+  'SS D_L',
+  'SS D_R',
+  'SS M_L',
+  'SS M_R',
+  'SS U_L',
+  'SS U_R',
+  'UH',
+  'LH',
+]
+
+function createDefaultLightingControls() {
+  return DEFAULT_LIGHT_LABELS.map((label) => ({
+    label,
+    level: 50,
+    color: '#ffffff',
+  }))
+}
+
+function normalizeLightingControls(rawControls) {
+  if (!Array.isArray(rawControls) || rawControls.length === 0) {
+    return createDefaultLightingControls()
+  }
+
+  const byLabel = new Map()
+
+  rawControls.forEach((item) => {
+    if (!item || typeof item !== 'object') return
+    const label = item.label
+    if (typeof label !== 'string') return
+    if (!DEFAULT_LIGHT_LABELS.includes(label)) return
+    if (byLabel.has(label)) return
+
+    const level =
+      typeof item.level === 'number' ? item.level : 50
+    const color =
+      typeof item.color === 'string' && item.color
+        ? item.color
+        : '#ffffff'
+
+    byLabel.set(label, {
+      label,
+      level,
+      color,
+    })
+  })
+
+  return DEFAULT_LIGHT_LABELS.map((label) => {
+    const existing = byLabel.get(label)
+    if (existing) return existing
+    return {
+      label,
+      level: 50,
+      color: '#ffffff',
+    }
+  })
+}
+
 async function fetchLightSettings(projectId, sceneId) {
   const res = await fetch(
     `/api/projects/${encodeURIComponent(projectId)}/scenes/${encodeURIComponent(sceneId)}/light`,
@@ -19,7 +88,7 @@ async function fetchLightSettings(projectId, sceneId) {
 }
 
 function getSceneDisplayData(projectId, scene, serverData) {
-  const baseLightingControls =
+  const baseFromScene =
     scene.lighting?.map((line) => {
       const match = line.match(/(.*?)(\d+)\s*%/)
       const baseLabel = match ? match[1].trim() : line
@@ -32,14 +101,17 @@ function getSceneDisplayData(projectId, scene, serverData) {
       }
     }) || []
 
-  let lightingControls = baseLightingControls
+  let lightingControls =
+    baseFromScene.length > 0
+      ? normalizeLightingControls(baseFromScene)
+      : createDefaultLightingControls()
   let memoText = scene.memo || ''
   let timeText = scene.time || '0:00'
   let sceneName = scene.sceneName || ''
 
   if (serverData) {
     if (Array.isArray(serverData.lightingControls)) {
-      lightingControls = serverData.lightingControls
+      lightingControls = normalizeLightingControls(serverData.lightingControls)
     }
     if (typeof serverData.memoText === 'string') {
       memoText = serverData.memoText
@@ -60,7 +132,7 @@ function getSceneDisplayData(projectId, scene, serverData) {
       if (saved) {
         const parsed = JSON.parse(saved)
         if (Array.isArray(parsed.lightingControls)) {
-          lightingControls = parsed.lightingControls
+          lightingControls = normalizeLightingControls(parsed.lightingControls)
         }
         if (typeof parsed.memoText === 'string') {
           memoText = parsed.memoText
@@ -94,6 +166,11 @@ export default function SceneListPage() {
   const [undoCountdown, setUndoCountdown] = useState(0)
   const [draggingSceneId, setDraggingSceneId] = useState(null)
   const [dragOverIndex, setDragOverIndex] = useState(null)
+
+  const handleExportPdf = () => {
+    if (typeof window === 'undefined') return
+    window.print()
+  }
 
   useEffect(() => {
     setScenes(project?.scenes || [])
@@ -451,6 +528,13 @@ export default function SceneListPage() {
           <h1 className="projects-title">{project.name}</h1>
         </div>
         <div className="projects-actions scene-list-header-actions">
+          <button
+            type="button"
+            className="projects-new-button"
+            onClick={handleExportPdf}
+          >
+            保存（PDF）
+          </button>
           <Link to="/projects" className="projects-new-button">
             プロジェクト一覧に戻る
           </Link>
@@ -469,10 +553,7 @@ export default function SceneListPage() {
               id: sceneIdForLink,
               time: '0:00',
               sceneName: `SCENE ${index + 1}`,
-              lighting:
-                scenes.length > 0
-                  ? scenes[scenes.length - 1].lighting
-                  : ['SS 50%', 'ホリ', 'ピンスポットライト'],
+              lighting: DEFAULT_LIGHT_LABELS,
               memo: '',
             }
 
