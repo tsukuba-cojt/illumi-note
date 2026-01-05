@@ -58,9 +58,9 @@
   font-size: 14px;
 }
 
-.auth-field input[type='email'],
-.auth-field input[type='password'],
-.auth-field input[type='text'] {
+.auth-field input[type="email"],
+.auth-field input[type="password"],
+.auth-field input[type="text"] {
   width: 100%;
   padding: 8px 10px;
   border-radius: 8px;
@@ -88,7 +88,7 @@
   font-size: 14px;
 }
 
-.auth-form button[type='submit'] {
+.auth-form button[type="submit"] {
   border-radius: 999px;
   border: none;
   padding: 10px 16px;
@@ -273,7 +273,7 @@
   font-size: 16px;
 }
 
-.project-detail-field-box input[type='text'] {
+.project-detail-field-box input[type="text"] {
   width: 100%;
   box-sizing: border-box;
   border: none;
@@ -284,7 +284,7 @@
   outline: none;
 }
 
-.project-detail-field-box input[type='text']::placeholder {
+.project-detail-field-box input[type="text"]::placeholder {
   color: #9ca3af;
 }
 
@@ -337,6 +337,10 @@
   background-color: #000000;
   border-radius: 8px;
   overflow: hidden;
+}
+
+.project-preview {
+  width: 100%;
 }
 
 .page-stage .project-detail-stage {
@@ -517,7 +521,7 @@
   gap: 6px;
 }
 
-.lighting-slider-group input[type='range'] {
+.lighting-slider-group input[type="range"] {
   flex: 1;
 }
 
@@ -528,7 +532,7 @@
   flex: 1;
 }
 
-.lighting-slider-track input[type='range'] {
+.lighting-slider-track input[type="range"] {
   width: 100%;
 }
 
@@ -547,7 +551,7 @@
 }
 
 .lighting-slider-tick::before {
-  content: '';
+  content: "";
   position: absolute;
   top: -4px;
   left: 50%;
@@ -574,7 +578,7 @@
   color: #374151;
 }
 
-.lighting-color-group input[type='color'] {
+.lighting-color-group input[type="color"] {
   appearance: none;
   -webkit-appearance: none;
   border: none;
@@ -586,11 +590,11 @@
   cursor: pointer;
 }
 
-.lighting-color-group input[type='color']::-webkit-color-swatch-wrapper {
+.lighting-color-group input[type="color"]::-webkit-color-swatch-wrapper {
   padding: 0;
 }
 
-.lighting-color-group input[type='color']::-webkit-color-swatch {
+.lighting-color-group input[type="color"]::-webkit-color-swatch {
   border: 1px solid #9ca3af;
   border-radius: 999px;
 }
@@ -695,6 +699,10 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+}
+
+.scene-preview {
+  width: 100%;
 }
 
 .scene-card-panel {
@@ -935,4 +943,10 @@
   .scene-history-controls {
     display: none !important;
   }
+}
+
+canvas.hidden {
+  position: fixed;
+  left: -999999px;
+  top: -999999px;
 }

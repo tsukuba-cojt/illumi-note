@@ -1,6 +1,8 @@
 import { useParams, Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { findProject } from '../mock/projects.js'
+import { getImageFromUnity, sendCommandToUnity } from '../unity.js'
+import UnityContainer from '../UnityContainer.jsx'
 
 const DEFAULT_LIGHT_LABELS = [
   '1S',
@@ -25,8 +27,8 @@ const DEFAULT_LIGHT_LABELS = [
 ]
 
 function createDefaultLightingControls() {
-  return DEFAULT_LIGHT_LABELS.map((label) => ({
-    label,
+  return DEFAULT_LIGHT_LABELS.map((channel) => ({
+    channel,
     level: 50,
     color: '#ffffff',
   }))
@@ -41,10 +43,10 @@ function normalizeLightingControls(rawControls) {
 
   rawControls.forEach((item) => {
     if (!item || typeof item !== 'object') return
-    const label = item.label
-    if (typeof label !== 'string') return
-    if (!DEFAULT_LIGHT_LABELS.includes(label)) return
-    if (byLabel.has(label)) return
+    const channel = item.channel
+    if (typeof channel !== 'string') return
+    if (!DEFAULT_LIGHT_LABELS.includes(channel)) return
+    if (byLabel.has(channel)) return
 
     const level =
       typeof item.level === 'number' ? item.level : 50
@@ -53,18 +55,18 @@ function normalizeLightingControls(rawControls) {
         ? item.color
         : '#ffffff'
 
-    byLabel.set(label, {
-      label,
+    byLabel.set(channel, {
+      channel,
       level,
       color,
     })
   })
 
-  return DEFAULT_LIGHT_LABELS.map((label) => {
-    const existing = byLabel.get(label)
+  return DEFAULT_LIGHT_LABELS.map((channel) => {
+    const existing = byLabel.get(channel)
     if (existing) return existing
     return {
-      label,
+      channel,
       level: 50,
       color: '#ffffff',
     }
@@ -95,7 +97,7 @@ function getSceneDisplayData(projectId, scene, serverData) {
       const initialLevel = match ? Number(match[2]) : 50
 
       return {
-        label: baseLabel,
+        channel: baseLabel,
         level: initialLevel,
         color: '#ffffff',
       }
@@ -150,12 +152,17 @@ function getSceneDisplayData(projectId, scene, serverData) {
   return { lightingControls, memoText, timeText, sceneName }
 }
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
 export default function SceneListPage() {
   const { projectId } = useParams()
   const project = findProject(projectId)
 
   const [scenes, setScenes] = useState(project?.scenes || [])
   const [sceneLightCache, setSceneLightCache] = useState({})
+  const [scenePreviews, setScenePreviews] = useState(/** @type {Map<string, string>} */ (new Map()))
 
   const [visibleCount, setVisibleCount] = useState(() =>
     Math.max(project?.scenes?.length || 0, 3)
@@ -171,6 +178,35 @@ export default function SceneListPage() {
     if (typeof window === 'undefined') return
     window.print()
   }
+
+  useEffect(() => {
+    let canceled = false;
+    ;(async () => {
+      const newScenePreviews = new Map();
+      for (const scene of scenes) {
+        const baseSceneForDisplay =
+          scene || {
+            id: sceneIdForLink,
+            time: '0:00',
+            sceneName: `SCENE ${index + 1}`,
+            lighting: DEFAULT_LIGHT_LABELS,
+            memo: '',
+          }
+        const display = getSceneDisplayData(
+          project.id,
+          baseSceneForDisplay,
+          scene ? sceneLightCache[scene.id] : null
+        )
+        console.log(display)
+        await sendCommandToUnity(display.lightingControls);
+        await sleep(100);
+        if (canceled) return;
+        newScenePreviews.set(scene.id, getImageFromUnity())
+      }
+      setScenePreviews(newScenePreviews)
+    })()
+    return () => canceled = true;
+  }, [])
 
   useEffect(() => {
     setScenes(project?.scenes || [])
@@ -201,40 +237,40 @@ export default function SceneListPage() {
     setDragOverIndex(null)
   }, [projectId, project])
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    if (!projectId) return
-
-    let cancelled = false
-    const idsToFetch = Array.from({ length: visibleCount })
-      .map((_, index) => scenes[index]?.id)
-      .filter(Boolean)
-
-    idsToFetch.forEach((sceneId) => {
-      if (sceneLightCache[sceneId] !== undefined) return
-
-      ;(async () => {
-        try {
-          const data = await fetchLightSettings(projectId, sceneId)
-          if (cancelled) return
-          setSceneLightCache((prev) => ({
-            ...prev,
-            [sceneId]: data,
-          }))
-        } catch {
-          if (cancelled) return
-          setSceneLightCache((prev) => ({
-            ...prev,
-            [sceneId]: null,
-          }))
-        }
-      })()
-    })
-
-    return () => {
-      cancelled = true
-    }
-  }, [projectId, scenes, visibleCount, sceneLightCache])
+  // useEffect(() => {
+  //   if (typeof window === 'undefined') return
+  //   if (!projectId) return
+  //
+  //   let cancelled = false
+  //   const idsToFetch = Array.from({ length: visibleCount })
+  //     .map((_, index) => scenes[index]?.id)
+  //     .filter(Boolean)
+  //
+  //   idsToFetch.forEach((sceneId) => {
+  //     if (sceneLightCache[sceneId] !== undefined) return
+  //
+  //     ;(async () => {
+  //       try {
+  //         const data = await fetchLightSettings(projectId, sceneId)
+  //         if (cancelled) return
+  //         setSceneLightCache((prev) => ({
+  //           ...prev,
+  //           [sceneId]: data,
+  //         }))
+  //       } catch {
+  //         if (cancelled) return
+  //         setSceneLightCache((prev) => ({
+  //           ...prev,
+  //           [sceneId]: null,
+  //         }))
+  //       }
+  //     })()
+  //   })
+  //
+  //   return () => {
+  //     cancelled = true
+  //   }
+  // }, [projectId, scenes, visibleCount, sceneLightCache])
 
   const handleDeleteScene = (scene) => {
     if (!scene) return
@@ -595,9 +631,7 @@ export default function SceneListPage() {
 
               <div className="scene-card-body">
                 <div className="scene-card-stage">
-                  <div className="project-detail-stage-placeholder">
-                    <span>{isPlaceholder ? 'New Scene' : 'Stage Preview'}</span>
-                  </div>
+                  <img className="scene-preview" src={scene ? scenePreviews.get(scene.id) : undefined}  />
                 </div>
 
                 <div className="scene-card-side">
@@ -608,7 +642,7 @@ export default function SceneListPage() {
                         {display.lightingControls.map((light, i) => (
                           <li key={i} className="scene-card-lighting-item">
                             <span className="scene-card-lighting-label">
-                              {light.label || `Light ${i + 1}`}
+                              {light.channel || `Light ${i + 1}`}
                             </span>
                             <span className="scene-card-lighting-level">
                               {typeof light.level === 'number' ? `${light.level}%` : ''}
@@ -697,6 +731,7 @@ export default function SceneListPage() {
           </button>
         </div>
       </div>
+      <UnityContainer visible={false} />
     </div>
   )
 }
