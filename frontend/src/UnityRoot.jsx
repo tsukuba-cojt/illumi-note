@@ -1,8 +1,21 @@
 import { useEffect } from 'react'
-import { initUnity } from './unity'
+import { useLocation, matchPath } from 'react-router-dom'
+import { initUnity, unityCanvas } from './unity'
 
 export default function UnityRoot() {
+  const location = useLocation()
+
+  const shouldDisplay =
+    matchPath('/projects/:projectId', location.pathname) ||
+    matchPath('/projects/:projectId/scenes/:sceneId', location.pathname) ||
+    matchPath('/stage', location.pathname)
+
   useEffect(() => {
+    if (!shouldDisplay) {
+      unityCanvas.classList.add('hidden')
+      return
+    }
+
     initUnity({
       arguments: [],
       dataUrl: '/WebGLBuild/Build/WebGLBuild.data',
@@ -17,7 +30,12 @@ export default function UnityRoot() {
         preserveDrawingBuffer: true,
       },
     })
-  }, [])
+    unityCanvas.classList.remove('hidden')
+  }, [shouldDisplay])
 
-  return <div id="unity-container" />
+  if (!shouldDisplay) {
+    return null
+  }
+
+  return <div id="unity-container" style={{ display: 'none' }} />
 }
