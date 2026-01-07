@@ -1,6 +1,8 @@
 import { useParams, Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { findScene } from '../mock/projects.js'
+import { sendCommandToUnity } from '../unity.js'
+import UnityContainer from '../UnityContainer.jsx'
 
 const DISCRETE_LEVELS = [0, 30, 50, 70, 100]
 const SAVE_DEBOUNCE_MS = 500
@@ -27,8 +29,8 @@ const DEFAULT_LIGHT_LABELS = [
 ]
 
 function createDefaultLightingControls() {
-  return DEFAULT_LIGHT_LABELS.map((label) => ({
-    label,
+  return DEFAULT_LIGHT_LABELS.map((channel) => ({
+    channel,
     level: 50,
     color: '#ffffff',
     isOn: true,
@@ -45,10 +47,10 @@ function normalizeLightingControls(rawControls) {
 
   rawControls.forEach((item) => {
     if (!item || typeof item !== 'object') return
-    const label = item.label
-    if (typeof label !== 'string') return
-    if (!DEFAULT_LIGHT_LABELS.includes(label)) return
-    if (byLabel.has(label)) return
+    const channel = item.channel
+    if (typeof channel !== 'string') return
+    if (!DEFAULT_LIGHT_LABELS.includes(channel)) return
+    if (byLabel.has(channel)) return
 
     const level =
       typeof item.level === 'number' ? item.level : 50
@@ -60,8 +62,8 @@ function normalizeLightingControls(rawControls) {
       typeof item.isOn === 'boolean' ? item.isOn : true
     const showInfo = !!item.showInfo
 
-    byLabel.set(label, {
-      label,
+    byLabel.set(channel, {
+      channel,
       level,
       color,
       isOn,
@@ -69,11 +71,11 @@ function normalizeLightingControls(rawControls) {
     })
   })
 
-  return DEFAULT_LIGHT_LABELS.map((label) => {
-    const existing = byLabel.get(label)
+  return DEFAULT_LIGHT_LABELS.map((channel) => {
+    const existing = byLabel.get(channel)
     if (existing) return existing
     return {
-      label,
+      channel,
       level: 50,
       color: '#ffffff',
       isOn: true,
@@ -107,11 +109,11 @@ async function putLightSettings(projectId, sceneId, payload) {
   if (!res.ok) throw new Error(`PUT light failed: ${res.status}`)
 }
 
-function getLightingInfoText(label) {
-  if (!label) return 'このライトの説明です。'
-  if (label.startsWith('SS')) return 'このシーンのメインの明るさ（％）を表します。'
-  if (label.startsWith('ホリ')) return 'ホリ（背景幕）を照らすライトの色設定です。'
-  if (label.startsWith('ピンスポットライト')) return 'ピンスポットライト（前面のスポット）の色設定です。'
+function getLightingInfoText(channel) {
+  if (!channel) return 'このライトの説明です。'
+  if (channel.startsWith('SS')) return 'このシーンのメインの明るさ（％）を表します。'
+  if (channel.startsWith('ホリ')) return 'ホリ（背景幕）を照らすライトの色設定です。'
+  if (channel.startsWith('ピンスポットライト')) return 'ピンスポットライト（前面のスポット）の色設定です。'
   return 'このライトの説明です。'
 }
 
@@ -153,6 +155,10 @@ export default function ProjectDetailPage() {
   const [hasUserEdited, setHasUserEdited] = useState(false)
 
   useEffect(() => {
+    sendCommandToUnity(lightingControls);
+  }, [lightingControls])
+
+  useEffect(() => {
     setTimeText(scene?.time || '')
     setSceneNameText(scene?.sceneName || defaultSceneName)
     setMemoText(scene?.memo || '')
@@ -179,30 +185,30 @@ export default function ProjectDetailPage() {
     let cancelled = false
 
     ;(async () => {
-      try {
-        const apiData = await fetchLightSettings(projectId, sceneId)
-        if (cancelled) return
-        if (apiData) {
-          if (
-            Array.isArray(apiData.lightingControls) &&
-            apiData.lightingControls.length > 0
-          ) {
-            setLightingControls(
-              normalizeLightingControls(apiData.lightingControls)
-            )
-          }
-          if (typeof apiData.memoText === 'string') {
-            setMemoText(apiData.memoText)
-          }
-          if (typeof apiData.time === 'string') {
-            setTimeText(apiData.time)
-          }
-          if (typeof apiData.sceneName === 'string') {
-            setSceneNameText(apiData.sceneName)
-          }
-          return
-        }
-      } catch {}
+      // try {
+      //   const apiData = await fetchLightSettings(projectId, sceneId)
+      //   if (cancelled) return
+      //   if (apiData) {
+      //     if (
+      //       Array.isArray(apiData.lightingControls) &&
+      //       apiData.lightingControls.length > 0
+      //     ) {
+      //       setLightingControls(
+      //         normalizeLightingControls(apiData.lightingControls)
+      //       )
+      //     }
+      //     if (typeof apiData.memoText === 'string') {
+      //       setMemoText(apiData.memoText)
+      //     }
+      //     if (typeof apiData.time === 'string') {
+      //       setTimeText(apiData.time)
+      //     }
+      //     if (typeof apiData.sceneName === 'string') {
+      //       setSceneNameText(apiData.sceneName)
+      //     }
+      //     return
+      //   }
+      // } catch {}
 
       try {
         const key = `sceneSettings:${projectId}:${sceneId}`
@@ -265,21 +271,21 @@ export default function ProjectDetailPage() {
 
     setLastUpdatedText(formatted)
 
-    let cancelled = false
-    const timer = window.setTimeout(() => {
-      ;(async () => {
-        try {
-          await putLightSettings(projectId, sceneId, payloadObject)
-        } catch {
-          if (cancelled) return
-        }
-      })()
-    }, SAVE_DEBOUNCE_MS)
-
-    return () => {
-      cancelled = true
-      window.clearTimeout(timer)
-    }
+    // let cancelled = false
+    // const timer = window.setTimeout(() => {
+    //   ;(async () => {
+    //     try {
+    //       await putLightSettings(projectId, sceneId, payloadObject)
+    //     } catch {
+    //       if (cancelled) return
+    //     }
+    //   })()
+    // }, SAVE_DEBOUNCE_MS)
+    //
+    // return () => {
+    //   cancelled = true
+    //   window.clearTimeout(timer)
+    // }
   }, [
     projectId,
     sceneId,
@@ -351,12 +357,7 @@ export default function ProjectDetailPage() {
 
         <div className="project-detail-layout">
           <div className="project-detail-stage">
-            <div className="project-detail-stage-placeholder">
-              <span>Stage Preview</span>
-              <span className="project-detail-stage-note">
-                （ここにステージ画像や3Dビューが入ります）
-              </span>
-            </div>
+            <UnityContainer />
           </div>
 
           <div className="project-detail-side">
@@ -387,7 +388,7 @@ export default function ProjectDetailPage() {
                     >
                       <div className="lighting-control-header">
                         <span className="lighting-control-label">
-                          {control.label || `Light ${index + 1}`}
+                          {control.channel || `Light ${index + 1}`}
                           {typeof control.level === 'number' && (
                             <span className="lighting-control-percent">{` ${control.level}%`}</span>
                           )}
@@ -430,7 +431,7 @@ export default function ProjectDetailPage() {
 
                       {control.showInfo && (
                         <div className="lighting-info-tooltip">
-                          {getLightingInfoText(control.label)}
+                          {getLightingInfoText(control.channel)}
                         </div>
                       )}
 
