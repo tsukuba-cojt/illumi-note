@@ -180,10 +180,16 @@ export default function SceneListPage() {
   }
 
   useEffect(() => {
-    let canceled = false;
-    ;(async () => {
-      const newScenePreviews = new Map();
-      for (const scene of scenes) {
+    if (!project) return
+
+    let canceled = false
+    const loadPreviews = async () => {
+      const newScenePreviews = new Map()
+
+      for (let index = 0; index < visibleCount; index += 1) {
+        const scene = scenes[index] || null
+        const sceneIdForLink = scene?.id ?? `placeholder-${index + 1}`
+
         const baseSceneForDisplay =
           scene || {
             id: sceneIdForLink,
@@ -192,21 +198,34 @@ export default function SceneListPage() {
             lighting: DEFAULT_LIGHT_LABELS,
             memo: '',
           }
+
         const display = getSceneDisplayData(
           project.id,
           baseSceneForDisplay,
-          scene ? sceneLightCache[scene.id] : null
+          scene ? sceneLightCache[scene.id] ?? null : null
         )
-        console.log(display)
-        await sendCommandToUnity(display.lightingControls);
-        await sleep(100);
-        if (canceled) return;
-        newScenePreviews.set(scene.id, getImageFromUnity())
+
+        try {
+          await sendCommandToUnity(display.lightingControls)
+          await sleep(100)
+          if (canceled) return
+          newScenePreviews.set(sceneIdForLink, getImageFromUnity())
+        } catch (error) {
+          console.warn('Failed to capture scene preview', error)
+        }
       }
-      setScenePreviews(newScenePreviews)
-    })()
-    return () => canceled = true;
-  }, [])
+
+      if (!canceled) {
+        setScenePreviews(newScenePreviews)
+      }
+    }
+
+    loadPreviews()
+
+    return () => {
+      canceled = true
+    }
+  }, [project?.id, scenes, sceneLightCache, visibleCount])
 
   useEffect(() => {
     setScenes(project?.scenes || [])
@@ -603,6 +622,9 @@ export default function SceneListPage() {
             display.sceneName || baseSceneForDisplay.sceneName || `SCENE ${index + 1}`
           const isDragOver = dragOverIndex === index && !!draggingSceneId
 
+          const previewKey = scene?.id ?? sceneIdForLink
+          const previewSrc = scenePreviews.get(previewKey) ?? null
+
           const card = (
             <article
               className={`scene-card${
@@ -631,7 +653,13 @@ export default function SceneListPage() {
 
               <div className="scene-card-body">
                 <div className="scene-card-stage">
-                  <img className="scene-preview" src={scene ? scenePreviews.get(scene.id) : undefined}  />
+                  {previewSrc ? (
+                    <img className="scene-preview" src={previewSrc} alt="Scene preview" />
+                  ) : (
+                    <div className="project-detail-stage-placeholder">
+                      <span>{isPlaceholder ? 'New Scene' : 'Stage Preview'}</span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="scene-card-side">
