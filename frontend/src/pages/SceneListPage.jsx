@@ -1,7 +1,7 @@
 import { useParams, Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { findProject } from '../mock/projects.js'
-import { getImageFromUnity, sendCommandToUnity } from '../unity.js'
+import { renderOnUnity } from '../unity.js'
 import UnityContainer from '../UnityContainer.jsx'
 
 const DEFAULT_LIGHT_LABELS = [
@@ -152,10 +152,6 @@ function getSceneDisplayData(projectId, scene, serverData) {
   return { lightingControls, memoText, timeText, sceneName }
 }
 
-function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms))
-}
-
 export default function SceneListPage() {
   const { projectId } = useParams()
   const project = findProject(projectId)
@@ -205,14 +201,8 @@ export default function SceneListPage() {
           scene ? sceneLightCache[scene.id] ?? null : null
         )
 
-        try {
-          await sendCommandToUnity(display.lightingControls)
-          await sleep(100)
-          if (canceled) return
-          newScenePreviews.set(sceneIdForLink, getImageFromUnity())
-        } catch (error) {
-          console.warn('Failed to capture scene preview', error)
-        }
+        if (canceled) return
+        newScenePreviews.set(sceneIdForLink, await renderOnUnity(display.lightingControls))
       }
 
       if (!canceled) {

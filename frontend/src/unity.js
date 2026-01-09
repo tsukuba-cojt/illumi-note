@@ -9,6 +9,8 @@ function assert(b, message = "Assertion failed") {
   }
 }
 
+const FRAME_READY_EVENT = "UnityFrameReady";
+
 /** @type {Promise<any> | undefined} */
 let unityInstancePromise;
 export const unityCanvas = document.createElement("canvas");
@@ -40,9 +42,9 @@ export function initUnity(config) {
  *  isOn?: boolean,
  *  color?: string,
  * }[]} lightingControls
- * @returns {Promise<void>}
+ * @returns {Promise<string>}
  */
-export async function sendCommandToUnity(lightingControls) {
+export async function renderOnUnity(lightingControls) {
   assert(unityInstancePromise !== undefined, "initUnity has not been called");
   const unityInstance = await unityInstancePromise;
   unityInstance.SendMessage(
@@ -50,11 +52,11 @@ export async function sendCommandToUnity(lightingControls) {
     "ApplySceneFromWeb",
     JSON.stringify({ sceneName: "TEST", lightingControls }),
   );
-}
-
-/**
- * @returns {string}
- */
-export function getImageFromUnity() {
+  const frameReady = new Promise((resolve, reject) => {
+    window.addEventListener(FRAME_READY_EVENT, resolve, { once: true });
+    setTimeout(() => reject(`${FRAME_READY_EVENT} timed out`), 1000);
+  });
+  unityInstance.SendMessage("RenderManager", "RenderSingleFrame");
+  await frameReady;
   return unityCanvas.toDataURL();
 }

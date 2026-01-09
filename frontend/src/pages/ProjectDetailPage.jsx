@@ -1,7 +1,7 @@
 import { useParams, Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { findScene } from '../mock/projects.js'
-import { sendCommandToUnity } from '../unity.js'
+import { renderOnUnity } from '../unity.js'
 import UnityContainer from '../UnityContainer.jsx'
 
 const DISCRETE_LEVELS = [0, 30, 50, 70, 100]
@@ -155,7 +155,7 @@ export default function ProjectDetailPage() {
   const [hasUserEdited, setHasUserEdited] = useState(false)
 
   useEffect(() => {
-    sendCommandToUnity(lightingControls);
+    renderOnUnity(lightingControls);
   }, [lightingControls])
 
   useEffect(() => {
