@@ -31,9 +31,9 @@ export default function StageView() {
             </div>
             <div className="stageview-card-footer">
               <span className="stageview-card-title">{stage.label}</span>
-              <button type="button" className="stageview-button">
-                このステージを選択
-              </button>
+              <span className="project-detail-stage-note">
+                {stage.isUnityPreview ? 'このステージがライブで表示されています。' : 'プレビューは準備中です。'}
+              </span>
             </div>
           </article>
         ))}
