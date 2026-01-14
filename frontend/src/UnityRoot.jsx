@@ -14,9 +14,7 @@ export default function UnityRoot() {
   useEffect(() => {
     if (typeof window === 'undefined') return
 
-    const unblockBackspace = (event) => {
-      if (event.key !== 'Backspace') return
-
+    const unblockFormFieldKeys = (event) => {
       const target = event.target
       if (!target) return
 
@@ -29,11 +27,18 @@ export default function UnityRoot() {
       if (!isFormField) return
 
       event.stopImmediatePropagation()
+      event.stopPropagation()
     }
 
-    window.addEventListener('keydown', unblockBackspace, true)
+    const events = ['keydown', 'keypress', 'keyup']
+    events.forEach((type) => {
+      window.addEventListener(type, unblockFormFieldKeys, true)
+    })
+
     return () => {
-      window.removeEventListener('keydown', unblockBackspace, true)
+      events.forEach((type) => {
+        window.removeEventListener(type, unblockFormFieldKeys, true)
+      })
     }
   }, [])
 

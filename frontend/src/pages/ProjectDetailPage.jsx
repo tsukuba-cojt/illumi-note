@@ -50,6 +50,14 @@ const LIGHTING_INFO_TEXT = {
   'LH': '舞台奥のホリゾント幕(背景幕)を下から照らします',
 }
 
+function normalizeHalfWidthAlphanumerics(value) {
+  if (value == null) return ''
+  const text = String(value)
+  return text.replace(/[Ａ-Ｚａ-ｚ０-９]/g, (char) =>
+    String.fromCharCode(char.charCodeAt(0) - 0xfee0)
+  )
+}
+
 function createDefaultLightingControls() {
   return DEFAULT_LIGHT_LABELS.map((channel) => ({
     channel,
@@ -163,11 +171,15 @@ export default function ProjectDetailPage() {
   const [lightingControls, setLightingControls] = useState(() =>
     createDefaultLightingControls()
   )
-  const [timeText, setTimeText] = useState(scene?.time || '')
-  const [sceneNameText, setSceneNameText] = useState(
-    scene?.sceneName || defaultSceneName
+  const [timeText, setTimeText] = useState(() =>
+    normalizeHalfWidthAlphanumerics(scene?.time || '')
   )
-  const [memoText, setMemoText] = useState(scene?.memo || '')
+  const [sceneNameText, setSceneNameText] = useState(() =>
+    normalizeHalfWidthAlphanumerics(scene?.sceneName || defaultSceneName)
+  )
+  const [memoText, setMemoText] = useState(() =>
+    normalizeHalfWidthAlphanumerics(scene?.memo || '')
+  )
   const [lastUpdatedText, setLastUpdatedText] = useState(
     project?.updatedAt || ''
   )
@@ -178,9 +190,11 @@ export default function ProjectDetailPage() {
   }, [lightingControls])
 
   useEffect(() => {
-    setTimeText(scene?.time || '')
-    setSceneNameText(scene?.sceneName || defaultSceneName)
-    setMemoText(scene?.memo || '')
+    setTimeText(normalizeHalfWidthAlphanumerics(scene?.time || ''))
+    setSceneNameText(
+      normalizeHalfWidthAlphanumerics(scene?.sceneName || defaultSceneName)
+    )
+    setMemoText(normalizeHalfWidthAlphanumerics(scene?.memo || ''))
   }, [projectId, sceneId, defaultSceneName])
 
   useEffect(() => {
@@ -243,13 +257,13 @@ export default function ProjectDetailPage() {
           )
         }
         if (typeof parsed.memoText === 'string') {
-          setMemoText(parsed.memoText)
+          setMemoText(normalizeHalfWidthAlphanumerics(parsed.memoText))
         }
         if (typeof parsed.time === 'string') {
-          setTimeText(parsed.time)
+          setTimeText(normalizeHalfWidthAlphanumerics(parsed.time))
         }
         if (typeof parsed.sceneName === 'string') {
-          setSceneNameText(parsed.sceneName)
+          setSceneNameText(normalizeHalfWidthAlphanumerics(parsed.sceneName))
         }
       } catch {}
     })()
@@ -354,6 +368,11 @@ export default function ProjectDetailPage() {
                     setTimeText(e.target.value)
                     setHasUserEdited(true)
                   }}
+                  onBlur={(e) => {
+                    setTimeText(
+                      normalizeHalfWidthAlphanumerics(e.target.value)
+                    )
+                  }}
                 />
               </div>
             </div>
@@ -366,6 +385,11 @@ export default function ProjectDetailPage() {
                   onChange={(e) => {
                     setSceneNameText(e.target.value)
                     setHasUserEdited(true)
+                  }}
+                  onBlur={(e) => {
+                    setSceneNameText(
+                      normalizeHalfWidthAlphanumerics(e.target.value)
+                    )
                   }}
                 />
               </div>
@@ -532,6 +556,11 @@ export default function ProjectDetailPage() {
                 onChange={(e) => {
                   setMemoText(e.target.value)
                   setHasUserEdited(true)
+                }}
+                onBlur={(e) => {
+                  setMemoText(
+                    normalizeHalfWidthAlphanumerics(e.target.value)
+                  )
                 }}
                 placeholder="メモを入力してください"
                 rows={4}

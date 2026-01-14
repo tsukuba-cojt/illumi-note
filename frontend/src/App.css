@@ -270,10 +270,11 @@
 }
 
 .project-detail-field-label {
-  margin-bottom: 4px;
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
   color: #6b7280;
-  font-size: 11px;
-  text-transform: uppercase;
 }
 
 .project-detail-field-box {
