@@ -638,6 +638,7 @@ export default function SceneListPage() {
                       {sceneName}
                     </div>
                   </div>
+                  <div className="page-number">{index + 1}</div>
                 </div>
               </header>
 

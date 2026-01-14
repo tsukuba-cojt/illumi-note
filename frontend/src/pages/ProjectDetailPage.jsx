@@ -394,6 +394,7 @@ export default function ProjectDetailPage() {
                 />
               </div>
             </div>
+            <div className="page-number">{sceneId.match(/\d+/)}</div>
           </div>
 
         </div>
