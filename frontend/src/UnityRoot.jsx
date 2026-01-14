@@ -12,6 +12,32 @@ export default function UnityRoot() {
     matchPath('/projects/new', location.pathname)
 
   useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const unblockBackspace = (event) => {
+      if (event.key !== 'Backspace') return
+
+      const target = event.target
+      if (!target) return
+
+      const isFormField =
+        ((target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) &&
+          !target.readOnly &&
+          !target.disabled) ||
+        (target instanceof HTMLElement && target.isContentEditable)
+
+      if (!isFormField) return
+
+      event.stopImmediatePropagation()
+    }
+
+    window.addEventListener('keydown', unblockBackspace, true)
+    return () => {
+      window.removeEventListener('keydown', unblockBackspace, true)
+    }
+  }, [])
+
+  useEffect(() => {
     if (!shouldDisplay) {
       unityCanvas.classList.add('hidden')
       return
