@@ -957,7 +957,7 @@
 .scene-card-lighting-color {
   width: 14px;
   height: 14px;
-  border-radius: 3px;
+  border-radius: 100%;
   border: 1px solid #d4d4d8;
   background-color: #ffffff;
 }
