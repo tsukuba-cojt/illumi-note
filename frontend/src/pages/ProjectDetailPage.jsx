@@ -1,7 +1,7 @@
 import { useParams, Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { findScene } from '../mock/projects.js'
-import { sendCommandToUnity } from '../unity.js'
+import { renderOnUnity } from '../unity.js'
 import UnityContainer from '../UnityContainer.jsx'
 
 const DISCRETE_LEVELS = [0, 30, 50, 70, 100]
@@ -15,9 +15,9 @@ const DEFAULT_LIGHT_LABELS = [
   'CL U',
   'FS L',
   'FS R',
-  'CL R',
-  'CL CTR',
   'CL L',
+  'CL CTR',
+  'CL R',
   'SS D_L',
   'SS D_R',
   'SS M_L',
@@ -110,11 +110,50 @@ async function putLightSettings(projectId, sceneId, payload) {
 }
 
 function getLightingInfoText(channel) {
-  if (!channel) return 'このライトの説明です。'
-  if (channel.startsWith('SS')) return 'このシーンのメインの明るさ（％）を表します。'
-  if (channel.startsWith('ホリ')) return 'ホリ（背景幕）を照らすライトの色設定です。'
-  if (channel.startsWith('ピンスポットライト')) return 'ピンスポットライト（前面のスポット）の色設定です。'
-  return 'このライトの説明です。'
+  // if (!channel) return 'このライトの説明です。'
+  // if (channel.startsWith('SS')) return 'このシーンのメインの明るさ（％）を表します。'
+  // if (channel.startsWith('ホリ')) return 'ホリ（背景幕）を照らすライトの色設定です。'
+  // if (channel.startsWith('ピンスポットライト')) return 'ピンスポットライト（前面のスポット）の色設定です。'
+  // return 'このライトの説明です。'
+  if (channel === "1S") {
+    return "舞台の手前側を真上から照らす地明かりです"
+  } else if (channel === "2S") {
+    return "舞台の奥側を真上から照らす地明かりです"
+  } else if (channel === "1B") {
+    return "舞台の手前側全体をフラットに照らし、地明かりや作業灯として使います"
+  } else if (channel === "2B") {
+    return "舞台の奥側全体をフラットに照らし、地明かりや作業灯として使います"
+  } else if (channel === "CL D") {
+    return "舞台の手前側全体を正面から照らす地明かりです"
+  } else if (channel === "CL U") {
+    return "舞台の手前側全体を正面から照らす地明かりです"
+  } else if (channel === "FS L") {
+    return "舞台を左斜め前から照らす地明かりです"
+  } else if (channel === "FS R") {
+    return "舞台を右斜め前から照らす地明かりです"
+  } else if (channel === "CL L") {
+    return "舞台の下手(左)を正面から部分的に照らします"
+  } else if (channel === "CL CTR") {
+    return "舞台の中央を正面から部分的に照らします"
+  } else if (channel === "CL R") {
+    return "舞台の上手(右)を正面から部分的に照らします"
+  } else if (channel === "SS D_L") {
+    return "舞台の手前側を下手(左)舞台袖から横向きに照らします"
+  } else if (channel === "SS D_R") {
+    return "舞台の手前側を上手(右)舞台袖から横向きに照らします"
+  } else if (channel === "SS M_L") {
+    return "舞台の中央を下手(左)舞台袖から横向きに照らします"
+  } else if (channel === "SS M_R") {
+    return "舞台の中央を上手(右)舞台袖から横向きに照らします"
+  } else if (channel === "SS U_L") {
+    return "舞台の奥側を下手(左)舞台袖から横向きに照らします"
+  } else if (channel === "SS U_R") {
+    return "舞台の奥側を上手(右)舞台袖から横向きに照らします"
+  } else if (channel === "UH") {
+    return "舞台奥のホリゾント幕(背景幕)を上から照らします"
+  } else if (channel === "LH") {
+    return "舞台奥のホリゾント幕(背景幕)を下から照らします"
+  }
 }
 
 export default function ProjectDetailPage() {
@@ -155,7 +194,7 @@ export default function ProjectDetailPage() {
   const [hasUserEdited, setHasUserEdited] = useState(false)
 
   useEffect(() => {
-    sendCommandToUnity(lightingControls);
+    renderOnUnity(lightingControls);
   }, [lightingControls])
 
   useEffect(() => {
