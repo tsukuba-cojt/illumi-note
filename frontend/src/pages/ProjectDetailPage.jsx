@@ -61,8 +61,8 @@ function normalizeHalfWidthAlphanumerics(value) {
 function createDefaultLightingControls() {
   return DEFAULT_LIGHT_LABELS.map((channel) => ({
     channel,
-    level: 50,
-    color: '#ffffff',
+    level: 0,
+    color: '#FDF7A1',
     isOn: true,
     showInfo: false,
   }))
@@ -83,11 +83,11 @@ function normalizeLightingControls(rawControls) {
     if (byLabel.has(channel)) return
 
     const level =
-      typeof item.level === 'number' ? item.level : 50
+      typeof item.level === 'number' ? item.level : 0
     const color =
       typeof item.color === 'string' && item.color
         ? item.color
-        : '#ffffff'
+        : '#FDF7A1'
     const isOn =
       typeof item.isOn === 'boolean' ? item.isOn : true
     const showInfo = !!item.showInfo
@@ -106,8 +106,8 @@ function normalizeLightingControls(rawControls) {
     if (existing) return existing
     return {
       channel,
-      level: 50,
-      color: '#ffffff',
+      level: 0,
+      color: '#FDF7A1',
       isOn: true,
       showInfo: false,
     }

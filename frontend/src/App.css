@@ -158,29 +158,6 @@
   gap: 12px;
 }
 
-.side-nav-logout {
-  align-self: flex-end;
-  border: none;
-  padding: 10px 14px;
-  border-radius: 999px;
-  background-color: #111827;
-  color: #ffffff;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.2s ease;
-  margin-top: 32px;
-}
-
-.side-nav-logout:hover {
-  background-color: #0f172a;
-  transform: translateY(-1px);
-}
-
-.side-nav-logout:active {
-  transform: translateY(0);
-}
-
 .scene-list-project-members {
   display: flex;
   flex-wrap: wrap;
@@ -236,21 +213,17 @@
   background-color: #e5e7eb;
   display: flex;
   flex-direction: column;
-  align-items: stretch;
-  justify-content: space-between;
-  padding: 24px 12px 16px;
-  min-height: 100vh;
-  box-sizing: border-box;
+  align-items: center;
+  padding: 24px 0;
 }
 
-.side-nav-links {
+.side-nav ul {
   list-style: none;
   padding: 0;
   margin: 0;
   display: flex;
   flex-direction: column;
   gap: 24px;
-  align-items: center;
 }
 
 .side-nav a {
@@ -297,11 +270,10 @@
 }
 
 .project-detail-field-label {
-  display: block;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
+  margin-bottom: 4px;
   color: #6b7280;
+  font-size: 11px;
+  text-transform: uppercase;
 }
 
 .project-detail-field-box {
@@ -985,7 +957,7 @@
 .scene-card-lighting-color {
   width: 14px;
   height: 14px;
-  border-radius: 100%;
+  border-radius: 50%;
   border: 1px solid #d4d4d8;
   background-color: #ffffff;
 }
@@ -1091,6 +1063,23 @@
   display: flex;
   gap: 8px;
 }
+
+  /* 右上にシーン番号 */
+  .scene-list {
+    counter-reset: scene-counter;
+  }
+  .project-detail-fields::after {
+    counter-increment: scene-counter;
+    content: counter(scene-counter);
+    border: 1px solid black;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: grid;
+    place-content: center;
+    align-self: center;
+    margin-left: auto;
+  }
 
 .scene-history-button {
   width: 32px;

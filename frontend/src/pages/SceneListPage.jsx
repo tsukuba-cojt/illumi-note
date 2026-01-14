@@ -29,8 +29,8 @@ const DEFAULT_LIGHT_LABELS = [
 function createDefaultLightingControls() {
   return DEFAULT_LIGHT_LABELS.map((channel) => ({
     channel,
-    level: 50,
-    color: '#ffffff',
+    level: 0,
+    color: '#FDF7A1',
   }))
 }
 
@@ -49,11 +49,11 @@ function normalizeLightingControls(rawControls) {
     if (byLabel.has(channel)) return
 
     const level =
-      typeof item.level === 'number' ? item.level : 50
+      typeof item.level === 'number' ? item.level : 0
     const color =
       typeof item.color === 'string' && item.color
         ? item.color
-        : '#ffffff'
+        : '#FDF7A1'
 
     byLabel.set(channel, {
       channel,
@@ -67,8 +67,8 @@ function normalizeLightingControls(rawControls) {
     if (existing) return existing
     return {
       channel,
-      level: 50,
-      color: '#ffffff',
+      level: 0,
+      color: '#FDF7A1',
     }
   })
 }
@@ -94,12 +94,12 @@ function getSceneDisplayData(projectId, scene, serverData) {
     scene.lighting?.map((line) => {
       const match = line.match(/(.*?)(\d+)\s*%/)
       const baseLabel = match ? match[1].trim() : line
-      const initialLevel = match ? Number(match[2]) : 50
+      const initialLevel = match ? Number(match[2]) : 0
 
       return {
         channel: baseLabel,
         level: initialLevel,
-        color: '#ffffff',
+        color: '#FDF7A1',
       }
     }) || []
 
@@ -667,7 +667,7 @@ export default function SceneListPage() {
                             </span>
                             <span
                               className="scene-card-lighting-color"
-                              style={{ backgroundColor: light.color || '#ffffff' }}
+                              style={{ backgroundColor: light.color || '#FDF7A1' }}
                             />
                           </li>
                         ))}
