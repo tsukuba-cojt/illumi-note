@@ -568,53 +568,6 @@
   color: #6b7280;
 }
 
-.profile-actions {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.profile-save-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 12px 24px;
-  border-radius: 999px;
-  border: none;
-  background: #000000;
-  color: #ffffff;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
-  box-shadow: 0 15px 30px rgba(17, 24, 39, 0.4);
-}
-
-.profile-save-button:disabled {
-  background: #4b5563;
-  cursor: progress;
-  box-shadow: none;
-}
-
-.profile-save-button:not(:disabled):hover {
-  transform: translateY(-2px);
-  background: #111111;
-  box-shadow: 0 18px 40px rgba(17, 24, 39, 0.45);
-}
-
-.profile-status {
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.profile-status-success {
-  color: #059669;
-}
-
-.profile-status-error {
-  color: #dc2626;
-}
-
 .sr-only {
   position: absolute;
   width: 1px;
@@ -1004,7 +957,7 @@
 .scene-card-lighting-color {
   width: 14px;
   height: 14px;
-  border-radius: 3px;
+  border-radius: 100%;
   border: 1px solid #d4d4d8;
   background-color: #ffffff;
 }
@@ -1132,9 +1085,27 @@
 }
 
 @media print {
-  body {
+  :root {
+    background-color: unset;
+  }
+
+  body,
+  .layout-main {
     margin: 0;
-    background-color: #ffffff;
+    background-color: white;
+  }
+
+  .side-nav,
+  .projects-new-button {
+    display: none;
+  }
+
+  .scene-card {
+    break-inside: avoid;
+  }
+
+  .scene-card-memo {
+    color: black;
   }
 
   #root,
@@ -1144,64 +1115,61 @@
     box-shadow: none;
   }
 
-  .layout-content {
-    padding: 16px;
+  .layout-main .layout-content {
+    padding: 0;
   }
 
-  .page {
-    max-width: none;
-    margin: 0;
-  }
-
-  .page-scene-list {
+  .layout-main .page-scene-list {
     box-shadow: none;
-    border-radius: 0;
-    padding: 8px 16px 16px;
-  }
-
-  .projects-header {
-    margin-bottom: 8px;
-  }
-
-  .scene-list {
-    gap: 8px;
-  }
-
-  .scene-card {
-    padding: 8px 10px 10px;
-    border-radius: 4px;
-  }
-
-  .scene-card-body {
-    gap: 8px;
-  }
-
-  .scene-card-stage {
-    border-radius: 4px;
-  }
-
-  .scene-card .project-detail-stage-placeholder {
-    aspect-ratio: 3 / 1;
-    font-size: 12px;
-  }
-
-  .scene-card-panel {
-    padding: 8px 9px 9px;
-  }
-
-  .scene-card-lighting-list {
-    margin-top: 4px;
-    font-size: 10px;
-  }
-
-  .scene-card-memo {
-    margin-top: 4px;
-    font-size: 10px;
+    padding: 0;
   }
 
   .scene-undo-toast,
   .scene-history-controls {
     display: none !important;
+  }
+
+  .projects-header {
+    margin: 0;
+  }
+
+  /* シーンの時間と名前 */
+  .project-detail-field {
+    flex-direction: row;
+    align-items: center;
+  }
+  .project-detail-field-label {
+    margin: 0;
+  }
+  .project-detail-field-box {
+    padding: 0;
+    background-color: unset;
+    border: unset;
+  }
+
+  /* ライト一覧とメモ */
+  .project-detail-panel-title {
+    display: none;
+  }
+  .scene-card-lighting-list,
+  .scene-card-memo {
+    margin: 0;
+  }
+  .scene-card-stage {
+    align-self: self-start;
+  }
+
+  /* ライト一覧を3列にする */
+  .scene-card-body {
+    grid-template-columns: 1fr 2fr;
+  }
+  .scene-card-lighting-list {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    column-gap: 30px;
+  }
+  .scene-card-lighting-label {
+    text-align: end;
   }
 }
 
