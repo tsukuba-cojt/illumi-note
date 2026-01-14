@@ -1,8 +1,45 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { fetchProfile, updateProfile } from '../api/profile.js'
 
 export default function UserProfilePage() {
-  const [avatarUrl, setAvatarUrl] = useState(null)
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    password: '',
+    avatarUrl: null,
+  })
+  const [status, setStatus] = useState(null)
+  const [isSaving, setIsSaving] = useState(false)
   const fileInputRef = useRef(null)
+
+  useEffect(() => {
+    let isMounted = true
+
+    const loadProfile = async () => {
+      try {
+        const profile = await fetchProfile()
+        if (isMounted) {
+          setForm({
+            name: profile.name ?? '',
+            email: profile.email ?? '',
+            password: profile.password ?? '',
+            avatarUrl: profile.avatarUrl ?? null,
+          })
+        }
+      } catch (error) {
+        if (isMounted) {
+          setStatus({ type: 'error', message: 'プロフィールの読み込みに失敗しました。' })
+        }
+        console.error(error)
+      }
+    }
+
+    loadProfile()
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
 
   const handleAvatarClick = () => {
     fileInputRef.current?.click()
@@ -14,17 +51,39 @@ export default function UserProfilePage() {
 
     const reader = new FileReader()
     reader.onload = () => {
-      setAvatarUrl(reader.result?.toString() ?? null)
+      const value = reader.result?.toString() ?? null
+      setForm((prev) => ({ ...prev, avatarUrl: value }))
     }
     reader.readAsDataURL(file)
+  }
+
+  const handleInputChange = (event) => {
+    const { name, value } = event.target
+    setForm((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const handleSubmit = async (event) => {
+    event.preventDefault()
+    setIsSaving(true)
+    setStatus(null)
+
+    try {
+      await updateProfile(form)
+      setStatus({ type: 'success', message: 'プロフィールを保存しました。' })
+    } catch (error) {
+      setStatus({ type: 'error', message: 'プロフィールの保存に失敗しました。' })
+      console.error(error)
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   return (
     <div className="page page-profile">
       <section className="profile-card" aria-labelledby="profile-heading">
         <div className="profile-avatar" aria-label="User avatar">
-          {avatarUrl ? (
-            <img src={avatarUrl} alt="現在のプロフィール画像" className="profile-avatar-image" />
+          {form.avatarUrl ? (
+            <img src={form.avatarUrl} alt="現在のプロフィール画像" className="profile-avatar-image" />
           ) : (
             <div className="profile-avatar-figure" aria-hidden="true" />
           )}
@@ -45,7 +104,7 @@ export default function UserProfilePage() {
           />
         </div>
 
-        <form className="profile-form" aria-describedby="profile-note">
+        <form className="profile-form" aria-describedby="profile-note" onSubmit={handleSubmit}>
           <h1 id="profile-heading" className="profile-title">
             プロフィール
           </h1>
@@ -55,9 +114,10 @@ export default function UserProfilePage() {
             <input
               type="text"
               name="name"
-              defaultValue="COJT大好き"
+              value={form.name}
               className="profile-input"
               autoComplete="name"
+              onChange={handleInputChange}
             />
           </label>
 
@@ -66,9 +126,10 @@ export default function UserProfilePage() {
             <input
               type="email"
               name="email"
-              defaultValue="cojt@sample.com"
+              value={form.email}
               className="profile-input"
               autoComplete="email"
+              onChange={handleInputChange}
             />
           </label>
 
@@ -77,15 +138,25 @@ export default function UserProfilePage() {
             <input
               type="password"
               name="password"
-              defaultValue="••••••••••••"
+              value={form.password}
               className="profile-input"
               autoComplete="current-password"
+              onChange={handleInputChange}
             />
           </label>
 
           <p id="profile-note" className="profile-note">
             プロフィール情報を更新するには各項目を編集してください。
           </p>
+
+          <div className="profile-actions">
+            <button type="submit" className="profile-save-button" disabled={isSaving}>
+              {isSaving ? '保存中…' : '保存する'}
+            </button>
+            {status ? (
+              <p className={`profile-status profile-status-${status.type}`}>{status.message}</p>
+            ) : null}
+          </div>
         </form>
       </section>
     </div>
