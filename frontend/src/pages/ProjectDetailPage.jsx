@@ -28,6 +28,28 @@ const DEFAULT_LIGHT_LABELS = [
   'LH',
 ]
 
+const LIGHTING_INFO_TEXT = {
+  '1S': '舞台の手前側を真上から照らす地明かりです',
+  '2S': '舞台の奥側を真上から照らす地明かりです',
+  '1B': '舞台の手前側全体をフラットに照らし、地明かりや作業灯として使います',
+  '2B': '舞台の奥側全体をフラットに照らし、地明かりや作業灯として使います',
+  'CL D': '舞台の手前側全体を正面から照らす地明かりです',
+  'CL U': '舞台の手前側全体を正面から照らす地明かりです',
+  'FS L': '舞台を左斜め前から照らす地明かりです',
+  'FS R': '舞台を右斜め前から照らす地明かりです',
+  'CL L': '舞台の下手(左)を正面から部分的に照らします',
+  'CL CTR': '舞台の中央を正面から部分的に照らします',
+  'CL R': '舞台の上手(右)を正面から部分的に照らします',
+  'SS D_L': '舞台の手前側を下手(左)舞台袖から横向きに照らします',
+  'SS D_R': '舞台の手前側を上手(右)舞台袖から横向きに照らします',
+  'SS M_L': '舞台の中央を下手(左)舞台袖から横向きに照らします',
+  'SS M_R': '舞台の中央を上手(右)舞台袖から横向きに照らします',
+  'SS U_L': '舞台の奥側を下手(左)舞台袖から横向きに照らします',
+  'SS U_R': '舞台の奥側を上手(右)舞台袖から横向きに照らします',
+  'UH': '舞台奥のホリゾント幕(背景幕)を上から照らします',
+  'LH': '舞台奥のホリゾント幕(背景幕)を下から照らします',
+}
+
 function createDefaultLightingControls() {
   return DEFAULT_LIGHT_LABELS.map((channel) => ({
     channel,
@@ -110,50 +132,8 @@ async function putLightSettings(projectId, sceneId, payload) {
 }
 
 function getLightingInfoText(channel) {
-  // if (!channel) return 'このライトの説明です。'
-  // if (channel.startsWith('SS')) return 'このシーンのメインの明るさ（％）を表します。'
-  // if (channel.startsWith('ホリ')) return 'ホリ（背景幕）を照らすライトの色設定です。'
-  // if (channel.startsWith('ピンスポットライト')) return 'ピンスポットライト（前面のスポット）の色設定です。'
-  // return 'このライトの説明です。'
-  if (channel === "1S") {
-    return "舞台の手前側を真上から照らす地明かりです"
-  } else if (channel === "2S") {
-    return "舞台の奥側を真上から照らす地明かりです"
-  } else if (channel === "1B") {
-    return "舞台の手前側全体をフラットに照らし、地明かりや作業灯として使います"
-  } else if (channel === "2B") {
-    return "舞台の奥側全体をフラットに照らし、地明かりや作業灯として使います"
-  } else if (channel === "CL D") {
-    return "舞台の手前側全体を正面から照らす地明かりです"
-  } else if (channel === "CL U") {
-    return "舞台の手前側全体を正面から照らす地明かりです"
-  } else if (channel === "FS L") {
-    return "舞台を左斜め前から照らす地明かりです"
-  } else if (channel === "FS R") {
-    return "舞台を右斜め前から照らす地明かりです"
-  } else if (channel === "CL L") {
-    return "舞台の下手(左)を正面から部分的に照らします"
-  } else if (channel === "CL CTR") {
-    return "舞台の中央を正面から部分的に照らします"
-  } else if (channel === "CL R") {
-    return "舞台の上手(右)を正面から部分的に照らします"
-  } else if (channel === "SS D_L") {
-    return "舞台の手前側を下手(左)舞台袖から横向きに照らします"
-  } else if (channel === "SS D_R") {
-    return "舞台の手前側を上手(右)舞台袖から横向きに照らします"
-  } else if (channel === "SS M_L") {
-    return "舞台の中央を下手(左)舞台袖から横向きに照らします"
-  } else if (channel === "SS M_R") {
-    return "舞台の中央を上手(右)舞台袖から横向きに照らします"
-  } else if (channel === "SS U_L") {
-    return "舞台の奥側を下手(左)舞台袖から横向きに照らします"
-  } else if (channel === "SS U_R") {
-    return "舞台の奥側を上手(右)舞台袖から横向きに照らします"
-  } else if (channel === "UH") {
-    return "舞台奥のホリゾント幕(背景幕)を上から照らします"
-  } else if (channel === "LH") {
-    return "舞台奥のホリゾント幕(背景幕)を下から照らします"
-  }
+  if (typeof channel !== 'string') return undefined
+  return LIGHTING_INFO_TEXT[channel] || undefined
 }
 
 export default function ProjectDetailPage() {
