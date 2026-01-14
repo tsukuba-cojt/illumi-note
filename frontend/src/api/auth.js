@@ -35,3 +35,7 @@ export function login({ email, password, rememberMe }) {
 export function register({ name, email, password, confirmPassword }) {
   return post('/auth/register', { name, email, password, confirmPassword });
 }
+
+export function logout() {
+  return post('/auth/logout', {});
+}

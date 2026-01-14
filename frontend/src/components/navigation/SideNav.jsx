@@ -1,9 +1,25 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
+import { logout } from '../../api/auth.js'
 
 export default function SideNav() {
+  const navigate = useNavigate()
+
+  const handleLogout = async () => {
+    try {
+      await logout()
+    } catch (error) {
+      console.error('Failed to logout', error)
+    }
+
+    window.localStorage.removeItem('accessToken')
+    window.localStorage.removeItem('refreshToken')
+    window.localStorage.removeItem('currentUser')
+    navigate('/login')
+  }
+
   return (
     <nav className="side-nav">
-      <ul>
+      <ul className="side-nav-links">
         <li>
           <NavLink to="/projects">プロジェクト</NavLink>
         </li>
@@ -17,6 +33,9 @@ export default function SideNav() {
           <NavLink to="/profile">プロフィール</NavLink>
         </li>
       </ul>
+      <button type="button" className="side-nav-logout" onClick={handleLogout}>
+        ログアウト
+      </button>
     </nav>
   )
 }
