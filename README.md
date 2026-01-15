@@ -75,17 +75,10 @@ npm run dev
 | `PUT` | `/api/projects/:projectId/scenes/:sceneId/light` | ライト設定 JSON を保存。 |
 | `GET` | `/api/health` | ヘルスチェック。 |
 
-詳細実装は `backend/src/index.ts` を参照してください @backend/src/index.ts#42-372。
 
 ## フロントエンド構成
-- ルーティングは `App.jsx` で定義されています。認証系とメインレイアウトを分離し、`/projects` 以下に主要機能が集約されています @frontend/src/App.jsx#20-38。
-- Unity WebGL の描画キャンバスは `UnityRoot.jsx` と `unity.js` で管理され、対象ページでのみ初期化されます @frontend/src/UnityRoot.jsx#5-73。
-- API との通信は `src/api/auth.js` の薄いラッパーを通じて行います @frontend/src/api/auth.js#1-41。
-
+- ルーティングは `App.jsx` で定義されています。認証系とメインレイアウトを分離し、`/projects` 以下に主要機能が集約されています。
+- Unity WebGL の描画キャンバスは `UnityRoot.jsx` と `unity.js` で管理され、対象ページでのみ初期化されます。
+- API との通信は `src/api/auth.js` の薄いラッパーを通じて行います。
 ## Docker
-`backend/docker-compose.yml` には MySQL 8 のコンテナ定義が含まれていますが、現状の実装はファイルベースのストレージを使用しており、MySQL への依存はありません。今後の拡張時に活用できます @backend/docker-compose.yml#1-21。
-
-## 開発時のヒント
-1. 認証状態は `localStorage` に保存され、ログアウト時にクリアされます @frontend/src/pages/LoginPage.jsx#18-38 @frontend/src/components/navigation/SideNav.jsx#7-38。
-2. プロジェクト・シーンのモックデータは `frontend/src/mock/projects.js` 内に定義されています。必要に応じて API 連携へ置き換えてください。
-3. Unity ビルドアセットは `public/WebGLBuild` と `public/StreamingAssets` に配置する想定です。`initUnity` の設定を変更することで差し替え可能です @frontend/src/UnityRoot.jsx#51-66。
+`backend/docker-compose.yml` には MySQL 8 のコンテナ定義が含まれていますが、現状の実装はファイルベースのストレージを使用しており、MySQL への依存はありません。今後の拡張時に活用する予定です。
