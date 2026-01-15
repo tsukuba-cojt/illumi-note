@@ -652,7 +652,6 @@ export default function SceneListPage() {
                     </span>
                     <div className="project-detail-field-box">{sceneName}</div>
                   </div>
-                  <div className="page-number">{index + 1}</div>
                 </div>
               </header>
 
@@ -718,8 +717,10 @@ export default function SceneListPage() {
                       </p>
                     )}
                   </div>
+                  
                 </div>
               </div>
+              <div className="page-number">{index + 1}</div>
             </article>
           );
 

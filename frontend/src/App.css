@@ -856,7 +856,7 @@
 }
 
 .page-scene-list .scene-card {
-  padding: 10px 12px 12px;
+  padding: 10px 12px 2px 12px;
 }
 
 .page-scene-list .scene-card-header {
@@ -868,7 +868,7 @@
 }
 
 .page-scene-list .scene-card-panel {
-  padding: 10px 10px 12px;
+  padding: 10px 12px 2px 12px;
 }
 
 .page-scene-list .project-detail-field-box {
@@ -1064,16 +1064,20 @@
   gap: 8px;
 }
 
-.page-number {
-  border: 1px solid black;
-  border-radius: 50%;
-  /* 21px以下にするとChromeで数字が消える */
-  width: 23px;    
-  height: 23px;
-  display: grid;
-  place-content: center;
-  align-self: center;
-  margin-left: auto;
+.project-detail-footer{
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* 左:更新 / 右:ページ数 */
+  gap: 8px;
+  width: 100%;
+}
+
+.page-number{
+  margin-left: auto;   /* 右へ */
+  font-size: 10px;
+  color: #6b7280;
+  margin-top: 3px;
+  text-align: right;
 }
 
 .scene-history-button {
