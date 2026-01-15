@@ -1,13 +1,13 @@
-# Illumi-note
+# Illuminote
 
-Illuminote は、ステージ照明のプランニングとビジュアライズを支援する Web アプリケーションです。Unity WebGL によるレンダリングと React 製フロントエンドを組み合わせ、プロジェクト単位のライトシーン管理やユーザー認証機能を提供します。
+Illuminote は、ステージ照明のプランニングとビジュアライズを支援する Web アプリケーションです。Unity WebGL によるレンダリングと Reactで作成したフロントエンドを組み合わせ、プロジェクト単位のライトシーン管理やユーザー認証機能を提供します。
 
 ## 主な機能
 - ログイン / 新規登録 / ログアウトによる簡易認証機能（メール・パスワード）
 - プロジェクト・シーンの一覧表示と詳細編集画面
 - Unity WebGL を用いたライトシーンのプレビュー描画
 - プロフィール編集とローカル JSON への永続化
-- 通知やステージ選択など将来的な拡張ページの雛形
+- 通知やステージ選択（将来的に拡張）
 
 ## 技術スタック
 - 言語: JavaScript（フロントエンド）, TypeScript（バックエンド）
@@ -77,14 +77,6 @@ npm run dev
 
 詳細実装は `backend/src/index.ts` を参照してください @backend/src/index.ts#42-372。
 
-## データ永続化
-- バックエンドは `backend/data/` 配下に JSON ファイルを保存します。
-  - `auth/users.json`: 登録済みユーザー一覧 @backend/src/index.ts#199-260
-  - `auth/current-user.json`: 現在ログイン中のユーザー ID @backend/src/index.ts#215-236
-  - `profile/user.json`: プロフィール情報 @backend/src/index.ts#238-254
-  - `light/<projectId>/<sceneId>.json`: ライト設定 @backend/src/index.ts#169-317
-- 初回起動時は必要なディレクトリを自動生成します。
-
 ## フロントエンド構成
 - ルーティングは `App.jsx` で定義されています。認証系とメインレイアウトを分離し、`/projects` 以下に主要機能が集約されています @frontend/src/App.jsx#20-38。
 - Unity WebGL の描画キャンバスは `UnityRoot.jsx` と `unity.js` で管理され、対象ページでのみ初期化されます @frontend/src/UnityRoot.jsx#5-73。
@@ -97,6 +89,3 @@ npm run dev
 1. 認証状態は `localStorage` に保存され、ログアウト時にクリアされます @frontend/src/pages/LoginPage.jsx#18-38 @frontend/src/components/navigation/SideNav.jsx#7-38。
 2. プロジェクト・シーンのモックデータは `frontend/src/mock/projects.js` 内に定義されています。必要に応じて API 連携へ置き換えてください。
 3. Unity ビルドアセットは `public/WebGLBuild` と `public/StreamingAssets` に配置する想定です。`initUnity` の設定を変更することで差し替え可能です @frontend/src/UnityRoot.jsx#51-66。
-
-## ライセンス
-本リポジトリのライセンスが未定の場合は、チーム方針に従って `LICENSE` ファイルを追加してください。
