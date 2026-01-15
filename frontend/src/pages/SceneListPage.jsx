@@ -688,10 +688,6 @@ export default function SceneListPage() {
                                 ? `${light.level}%`
                                 : ""}
                             </span>
-                            {/* <span
-                              className="scene-card-lighting-color"
-                              style={{ backgroundColor: light.color || '#FDF7A1' }}
-                            /> */}
                             <svg
                               className="scene-card-lighting-color"
                               viewBox="0 0 1 1"
