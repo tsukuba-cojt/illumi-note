@@ -1,250 +1,256 @@
-import { useParams, Link } from 'react-router-dom'
-import { useState, useEffect } from 'react'
-import { findProject } from '../mock/projects.js'
-import { renderOnUnity } from '../unity.js'
-import UnityContainer from '../UnityContainer.jsx'
+import { useParams, Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { findProject } from "../mock/projects.js";
+import { renderOnUnity } from "../unity.js";
+import UnityContainer from "../UnityContainer.jsx";
 
 const DEFAULT_LIGHT_LABELS = [
-  '1S',
-  '2S',
-  '1B',
-  '2B',
-  'CL D',
-  'CL U',
-  'FS L',
-  'FS R',
-  'CL R',
-  'CL CTR',
-  'CL L',
-  'SS D_L',
-  'SS D_R',
-  'SS M_L',
-  'SS M_R',
-  'SS U_L',
-  'SS U_R',
-  'UH',
-  'LH',
-]
+  "1S",
+  "2S",
+  "1B",
+  "2B",
+  "CL D",
+  "CL U",
+  "FS L",
+  "FS R",
+  "CL R",
+  "CL CTR",
+  "CL L",
+  "SS D_L",
+  "SS D_R",
+  "SS M_L",
+  "SS M_R",
+  "SS U_L",
+  "SS U_R",
+  "UH",
+  "LH",
+];
 
 function createDefaultLightingControls() {
   return DEFAULT_LIGHT_LABELS.map((channel) => ({
     channel,
     level: 0,
-    color: '#FDF7A1',
-  }))
+    color: "#FDF7A1",
+  }));
 }
 
 function normalizeLightingControls(rawControls) {
   if (!Array.isArray(rawControls) || rawControls.length === 0) {
-    return createDefaultLightingControls()
+    return createDefaultLightingControls();
   }
 
-  const byLabel = new Map()
+  const byLabel = new Map();
 
   rawControls.forEach((item) => {
-    if (!item || typeof item !== 'object') return
-    const channel = item.channel
-    if (typeof channel !== 'string') return
-    if (!DEFAULT_LIGHT_LABELS.includes(channel)) return
-    if (byLabel.has(channel)) return
+    if (!item || typeof item !== "object") return;
+    const channel = item.channel;
+    if (typeof channel !== "string") return;
+    if (!DEFAULT_LIGHT_LABELS.includes(channel)) return;
+    if (byLabel.has(channel)) return;
 
-    const level =
-      typeof item.level === 'number' ? item.level : 0
+    const level = typeof item.level === "number" ? item.level : 0;
     const color =
-      typeof item.color === 'string' && item.color
-        ? item.color
-        : '#FDF7A1'
+      typeof item.color === "string" && item.color ? item.color : "#FDF7A1";
 
     byLabel.set(channel, {
       channel,
       level,
       color,
-    })
-  })
+    });
+  });
 
   return DEFAULT_LIGHT_LABELS.map((channel) => {
-    const existing = byLabel.get(channel)
-    if (existing) return existing
+    const existing = byLabel.get(channel);
+    if (existing) return existing;
     return {
       channel,
       level: 0,
-      color: '#FDF7A1',
-    }
-  })
+      color: "#FDF7A1",
+    };
+  });
 }
 
 async function fetchLightSettings(projectId, sceneId) {
   const res = await fetch(
-    `/api/projects/${encodeURIComponent(projectId)}/scenes/${encodeURIComponent(sceneId)}/light`,
+    `/api/projects/${encodeURIComponent(projectId)}/scenes/${encodeURIComponent(
+      sceneId
+    )}/light`,
     {
-      method: 'GET',
+      method: "GET",
       headers: {
-        Accept: 'application/json',
+        Accept: "application/json",
       },
     }
-  )
+  );
 
-  if (res.status === 404) return null
-  if (!res.ok) throw new Error(`GET light failed: ${res.status}`)
-  return await res.json()
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`GET light failed: ${res.status}`);
+  return await res.json();
 }
 
 function getSceneDisplayData(projectId, scene, serverData) {
   const baseFromScene =
     scene.lighting?.map((line) => {
-      const match = line.match(/(.*?)(\d+)\s*%/)
-      const baseLabel = match ? match[1].trim() : line
-      const initialLevel = match ? Number(match[2]) : 0
+      const match = line.match(/(.*?)(\d+)\s*%/);
+      const baseLabel = match ? match[1].trim() : line;
+      const initialLevel = match ? Number(match[2]) : 0;
 
       return {
         channel: baseLabel,
         level: initialLevel,
-        color: '#FDF7A1',
-      }
-    }) || []
+        color: "#FDF7A1",
+      };
+    }) || [];
 
   let lightingControls =
     baseFromScene.length > 0
       ? normalizeLightingControls(baseFromScene)
-      : createDefaultLightingControls()
-  let memoText = scene.memo || ''
-  let timeText = scene.time || '0:00'
-  let sceneName = scene.sceneName || ''
+      : createDefaultLightingControls();
+  let memoText = scene.memo || "";
+  let timeText = scene.time || "0:00";
+  let sceneName = scene.sceneName || "";
 
   if (serverData) {
     if (Array.isArray(serverData.lightingControls)) {
-      lightingControls = normalizeLightingControls(serverData.lightingControls)
+      lightingControls = normalizeLightingControls(serverData.lightingControls);
     }
-    if (typeof serverData.memoText === 'string') {
-      memoText = serverData.memoText
+    if (typeof serverData.memoText === "string") {
+      memoText = serverData.memoText;
     }
-    if (typeof serverData.time === 'string') {
-      timeText = serverData.time
+    if (typeof serverData.time === "string") {
+      timeText = serverData.time;
     }
-    if (typeof serverData.sceneName === 'string') {
-      sceneName = serverData.sceneName
+    if (typeof serverData.sceneName === "string") {
+      sceneName = serverData.sceneName;
     }
-    return { lightingControls, memoText, timeText, sceneName }
+    return { lightingControls, memoText, timeText, sceneName };
   }
 
-  if (typeof window !== 'undefined') {
+  if (typeof window !== "undefined") {
     try {
-      const key = `sceneSettings:${projectId}:${scene.id}`
-      const saved = window.localStorage.getItem(key)
+      const key = `sceneSettings:${projectId}:${scene.id}`;
+      const saved = window.localStorage.getItem(key);
       if (saved) {
-        const parsed = JSON.parse(saved)
+        const parsed = JSON.parse(saved);
         if (Array.isArray(parsed.lightingControls)) {
-          lightingControls = normalizeLightingControls(parsed.lightingControls)
+          lightingControls = normalizeLightingControls(parsed.lightingControls);
         }
-        if (typeof parsed.memoText === 'string') {
-          memoText = parsed.memoText
+        if (typeof parsed.memoText === "string") {
+          memoText = parsed.memoText;
         }
-        if (typeof parsed.time === 'string') {
-          timeText = parsed.time
+        if (typeof parsed.time === "string") {
+          timeText = parsed.time;
         }
-        if (typeof parsed.sceneName === 'string') {
-          sceneName = parsed.sceneName
+        if (typeof parsed.sceneName === "string") {
+          sceneName = parsed.sceneName;
         }
       }
     } catch {}
   }
 
-  return { lightingControls, memoText, timeText, sceneName }
+  return { lightingControls, memoText, timeText, sceneName };
 }
 
 export default function SceneListPage() {
-  const { projectId } = useParams()
-  const project = findProject(projectId)
+  const { projectId } = useParams();
+  const project = findProject(projectId);
 
-  const [scenes, setScenes] = useState(project?.scenes || [])
-  const [sceneLightCache, setSceneLightCache] = useState({})
-  const [scenePreviews, setScenePreviews] = useState(/** @type {Map<string, string>} */ (new Map()))
+  const [scenes, setScenes] = useState(project?.scenes || []);
+  const [sceneLightCache, setSceneLightCache] = useState({});
+  const [scenePreviews, setScenePreviews] = useState(
+    /** @type {Map<string, string>} */ (new Map())
+  );
 
   const [visibleCount, setVisibleCount] = useState(() =>
     Math.max(project?.scenes?.length || 0, 3)
-  )
-  const [history, setHistory] = useState([])
-  const [historyIndex, setHistoryIndex] = useState(-1)
-  const [undoOpIndex, setUndoOpIndex] = useState(null)
-  const [undoCountdown, setUndoCountdown] = useState(0)
-  const [draggingSceneId, setDraggingSceneId] = useState(null)
-  const [dragOverIndex, setDragOverIndex] = useState(null)
+  );
+  const [history, setHistory] = useState([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
+  const [undoOpIndex, setUndoOpIndex] = useState(null);
+  const [undoCountdown, setUndoCountdown] = useState(0);
+  const [draggingSceneId, setDraggingSceneId] = useState(null);
+  const [dragOverIndex, setDragOverIndex] = useState(null);
 
   const handleExportPdf = () => {
-    if (typeof window === 'undefined') return
-    window.print()
-  }
+    if (typeof window === "undefined") return;
+    window.print();
+  };
 
   useEffect(() => {
-    if (!project) return
+    if (!project) return;
 
-    let canceled = false
+    let canceled = false;
     const loadPreviews = async () => {
-      const newScenePreviews = new Map()
+      const newScenePreviews = new Map();
 
       for (let index = 0; index < visibleCount; index += 1) {
-        const scene = scenes[index] || null
-        const sceneIdForLink = scene?.id ?? `placeholder-${index + 1}`
+        const scene = scenes[index] || null;
+        const sceneIdForLink = scene?.id ?? `placeholder-${index + 1}`;
 
-        const baseSceneForDisplay =
-          scene || {
-            id: sceneIdForLink,
-            time: '0:00',
-            sceneName: `SCENE ${index + 1}`,
-            lighting: DEFAULT_LIGHT_LABELS,
-            memo: '',
-          }
+        const baseSceneForDisplay = scene || {
+          id: sceneIdForLink,
+          time: "0:00",
+          sceneName: `SCENE ${index + 1}`,
+          lighting: DEFAULT_LIGHT_LABELS,
+          memo: "",
+        };
 
         const display = getSceneDisplayData(
           project.id,
           baseSceneForDisplay,
           scene ? sceneLightCache[scene.id] ?? null : null
-        )
+        );
 
-        if (canceled) return
-        newScenePreviews.set(sceneIdForLink, await renderOnUnity(display.lightingControls))
+        if (canceled) return;
+        newScenePreviews.set(
+          sceneIdForLink,
+          await renderOnUnity(display.lightingControls)
+        );
       }
 
       if (!canceled) {
-        setScenePreviews(newScenePreviews)
+        setScenePreviews(newScenePreviews);
       }
-    }
+    };
 
-    loadPreviews()
+    loadPreviews();
 
     return () => {
-      canceled = true
-    }
-  }, [project?.id, scenes, sceneLightCache, visibleCount])
+      canceled = true;
+    };
+  }, [project?.id, scenes, sceneLightCache, visibleCount]);
 
   useEffect(() => {
-    setScenes(project?.scenes || [])
-    setSceneLightCache({})
+    setScenes(project?.scenes || []);
+    setSceneLightCache({});
     // プロジェクトが変わったら表示件数と履歴をリセット
-    const baseScenesCount = project?.scenes?.length || 0
-    let initialVisibleCount = Math.max(baseScenesCount, 3)
+    const baseScenesCount = project?.scenes?.length || 0;
+    let initialVisibleCount = Math.max(baseScenesCount, 3);
 
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       try {
-        const key = `sceneList:${projectId}`
-        const saved = window.localStorage.getItem(key)
+        const key = `sceneList:${projectId}`;
+        const saved = window.localStorage.getItem(key);
         if (saved) {
-          const parsed = JSON.parse(saved)
-          if (typeof parsed.visibleCount === 'number') {
-            initialVisibleCount = Math.max(baseScenesCount, parsed.visibleCount)
+          const parsed = JSON.parse(saved);
+          if (typeof parsed.visibleCount === "number") {
+            initialVisibleCount = Math.max(
+              baseScenesCount,
+              parsed.visibleCount
+            );
           }
         }
       } catch {}
     }
 
-    setVisibleCount(initialVisibleCount)
-    setHistory([])
-    setHistoryIndex(-1)
-    setUndoOpIndex(null)
-    setUndoCountdown(0)
-    setDraggingSceneId(null)
-    setDragOverIndex(null)
-  }, [projectId, project])
+    setVisibleCount(initialVisibleCount);
+    setHistory([]);
+    setHistoryIndex(-1);
+    setUndoOpIndex(null);
+    setUndoCountdown(0);
+    setDraggingSceneId(null);
+    setDragOverIndex(null);
+  }, [projectId, project]);
 
   // useEffect(() => {
   //   if (typeof window === 'undefined') return
@@ -282,274 +288,278 @@ export default function SceneListPage() {
   // }, [projectId, scenes, visibleCount, sceneLightCache])
 
   const handleDeleteScene = (scene) => {
-    if (!scene) return
-    const sceneIndex = scenes.findIndex((s) => s.id === scene.id)
-    if (sceneIndex === -1) return
+    if (!scene) return;
+    const sceneIndex = scenes.findIndex((s) => s.id === scene.id);
+    if (sceneIndex === -1) return;
 
-    setScenes((prev) => prev.filter((s) => s.id !== scene.id))
+    setScenes((prev) => prev.filter((s) => s.id !== scene.id));
 
-    const op = { type: 'deleteScene', scene, index: sceneIndex }
+    const op = { type: "deleteScene", scene, index: sceneIndex };
 
     const baseHistory =
-      historyIndex >= 0 ? history.slice(0, historyIndex + 1) : history.slice(0, 0)
-    const newHistory = [...baseHistory, op]
-    setHistory(newHistory)
-    const newIndex = newHistory.length - 1
-    setHistoryIndex(newIndex)
-    setUndoOpIndex(newIndex)
-  }
+      historyIndex >= 0
+        ? history.slice(0, historyIndex + 1)
+        : history.slice(0, 0);
+    const newHistory = [...baseHistory, op];
+    setHistory(newHistory);
+    const newIndex = newHistory.length - 1;
+    setHistoryIndex(newIndex);
+    setUndoOpIndex(newIndex);
+  };
 
   const handleAddPlaceholder = () => {
-    const prevVisibleCount = visibleCount
-    const nextVisibleCount = prevVisibleCount + 1
+    const prevVisibleCount = visibleCount;
+    const nextVisibleCount = prevVisibleCount + 1;
 
-    setVisibleCount(nextVisibleCount)
+    setVisibleCount(nextVisibleCount);
 
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       try {
-        const key = `sceneList:${projectId}`
-        const payload = JSON.stringify({ visibleCount: nextVisibleCount })
-        window.localStorage.setItem(key, payload)
+        const key = `sceneList:${projectId}`;
+        const payload = JSON.stringify({ visibleCount: nextVisibleCount });
+        window.localStorage.setItem(key, payload);
       } catch {}
     }
 
-    const op = { type: 'addPlaceholder', prevVisibleCount }
+    const op = { type: "addPlaceholder", prevVisibleCount };
 
     const baseHistory =
-      historyIndex >= 0 ? history.slice(0, historyIndex + 1) : history.slice(0, 0)
-    const newHistory = [...baseHistory, op]
-    setHistory(newHistory)
-    const newIndex = newHistory.length - 1
-    setHistoryIndex(newIndex)
-  }
+      historyIndex >= 0
+        ? history.slice(0, historyIndex + 1)
+        : history.slice(0, 0);
+    const newHistory = [...baseHistory, op];
+    setHistory(newHistory);
+    const newIndex = newHistory.length - 1;
+    setHistoryIndex(newIndex);
+  };
 
   const handleDeletePlaceholder = () => {
-    const prevVisibleCount = visibleCount
-    if (prevVisibleCount <= scenes.length) return
+    const prevVisibleCount = visibleCount;
+    if (prevVisibleCount <= scenes.length) return;
 
-    const nextVisibleCount = Math.max(prevVisibleCount - 1, scenes.length)
-    setVisibleCount(nextVisibleCount)
+    const nextVisibleCount = Math.max(prevVisibleCount - 1, scenes.length);
+    setVisibleCount(nextVisibleCount);
 
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       try {
-        const key = `sceneList:${projectId}`
-        const payload = JSON.stringify({ visibleCount: nextVisibleCount })
-        window.localStorage.setItem(key, payload)
+        const key = `sceneList:${projectId}`;
+        const payload = JSON.stringify({ visibleCount: nextVisibleCount });
+        window.localStorage.setItem(key, payload);
       } catch {}
     }
 
-    const op = { type: 'deletePlaceholder', prevVisibleCount }
+    const op = { type: "deletePlaceholder", prevVisibleCount };
 
     const baseHistory =
-      historyIndex >= 0 ? history.slice(0, historyIndex + 1) : history.slice(0, 0)
-    const newHistory = [...baseHistory, op]
-    setHistory(newHistory)
-    const newIndex = newHistory.length - 1
-    setHistoryIndex(newIndex)
-    setUndoOpIndex(newIndex)
-  }
+      historyIndex >= 0
+        ? history.slice(0, historyIndex + 1)
+        : history.slice(0, 0);
+    const newHistory = [...baseHistory, op];
+    setHistory(newHistory);
+    const newIndex = newHistory.length - 1;
+    setHistoryIndex(newIndex);
+    setUndoOpIndex(newIndex);
+  };
 
   useEffect(() => {
-    if (undoOpIndex == null) return
-    setUndoCountdown(10)
+    if (undoOpIndex == null) return;
+    setUndoCountdown(10);
     const intervalId = setInterval(() => {
       setUndoCountdown((prev) => {
         if (prev <= 1) {
-          clearInterval(intervalId)
-          setUndoOpIndex(null)
-          return 0
+          clearInterval(intervalId);
+          setUndoOpIndex(null);
+          return 0;
         }
-        return prev - 1
-      })
-    }, 1000)
+        return prev - 1;
+      });
+    }, 1000);
 
     return () => {
-      clearInterval(intervalId)
-    }
-  }, [undoOpIndex])
+      clearInterval(intervalId);
+    };
+  }, [undoOpIndex]);
 
   const handleUndo = () => {
-    if (historyIndex < 0) return
-    const op = history[historyIndex]
-    if (!op) return
+    if (historyIndex < 0) return;
+    const op = history[historyIndex];
+    if (!op) return;
 
-    if (op.type === 'deleteScene') {
+    if (op.type === "deleteScene") {
       setScenes((prev) => {
-        const next = [...prev]
-        next.splice(op.index, 0, op.scene)
-        return next
-      })
-    } else if (op.type === 'reorderScene') {
+        const next = [...prev];
+        next.splice(op.index, 0, op.scene);
+        return next;
+      });
+    } else if (op.type === "reorderScene") {
       setScenes((prev) => {
-        const next = [...prev]
-        const currentIndex = next.findIndex(
-          (s) => s && s.id === op.sceneId
-        )
-        if (currentIndex === -1) return next
-        const [moved] = next.splice(currentIndex, 1)
-        const target = Math.min(Math.max(op.fromIndex, 0), next.length)
-        next.splice(target, 0, moved)
-        return next
-      })
-    } else if (op.type === 'deletePlaceholder') {
-      setVisibleCount(op.prevVisibleCount)
+        const next = [...prev];
+        const currentIndex = next.findIndex((s) => s && s.id === op.sceneId);
+        if (currentIndex === -1) return next;
+        const [moved] = next.splice(currentIndex, 1);
+        const target = Math.min(Math.max(op.fromIndex, 0), next.length);
+        next.splice(target, 0, moved);
+        return next;
+      });
+    } else if (op.type === "deletePlaceholder") {
+      setVisibleCount(op.prevVisibleCount);
 
-      if (typeof window !== 'undefined') {
+      if (typeof window !== "undefined") {
         try {
-          const key = `sceneList:${projectId}`
-          const payload = JSON.stringify({ visibleCount: op.prevVisibleCount })
-          window.localStorage.setItem(key, payload)
+          const key = `sceneList:${projectId}`;
+          const payload = JSON.stringify({ visibleCount: op.prevVisibleCount });
+          window.localStorage.setItem(key, payload);
         } catch {}
       }
-    } else if (op.type === 'addPlaceholder') {
-      setVisibleCount(op.prevVisibleCount)
+    } else if (op.type === "addPlaceholder") {
+      setVisibleCount(op.prevVisibleCount);
 
-      if (typeof window !== 'undefined') {
+      if (typeof window !== "undefined") {
         try {
-          const key = `sceneList:${projectId}`
-          const payload = JSON.stringify({ visibleCount: op.prevVisibleCount })
-          window.localStorage.setItem(key, payload)
+          const key = `sceneList:${projectId}`;
+          const payload = JSON.stringify({ visibleCount: op.prevVisibleCount });
+          window.localStorage.setItem(key, payload);
         } catch {}
       }
     }
 
-    const newIndex = historyIndex - 1
-    setHistoryIndex(newIndex)
+    const newIndex = historyIndex - 1;
+    setHistoryIndex(newIndex);
     if (undoOpIndex === historyIndex) {
-      setUndoOpIndex(null)
-      setUndoCountdown(0)
+      setUndoOpIndex(null);
+      setUndoCountdown(0);
     }
-  }
+  };
 
   const handleRedo = () => {
-    if (historyIndex >= history.length - 1) return
-    const nextIndex = historyIndex + 1
-    const op = history[nextIndex]
-    if (!op) return
+    if (historyIndex >= history.length - 1) return;
+    const nextIndex = historyIndex + 1;
+    const op = history[nextIndex];
+    if (!op) return;
 
-    if (op.type === 'deleteScene') {
-      setScenes((prev) => prev.filter((s) => s.id !== op.scene.id))
-      setUndoOpIndex(nextIndex)
-    } else if (op.type === 'reorderScene') {
+    if (op.type === "deleteScene") {
+      setScenes((prev) => prev.filter((s) => s.id !== op.scene.id));
+      setUndoOpIndex(nextIndex);
+    } else if (op.type === "reorderScene") {
       setScenes((prev) => {
-        const next = [...prev]
-        const currentIndex = next.findIndex(
-          (s) => s && s.id === op.sceneId
-        )
-        if (currentIndex === -1) return next
-        const [moved] = next.splice(currentIndex, 1)
-        const target = Math.min(Math.max(op.toIndex, 0), next.length)
-        next.splice(target, 0, moved)
-        return next
-      })
-    } else if (op.type === 'deletePlaceholder') {
-      const nextVisibleCount = Math.max(op.prevVisibleCount - 1, scenes.length)
-      setVisibleCount(nextVisibleCount)
-      if (typeof window !== 'undefined') {
+        const next = [...prev];
+        const currentIndex = next.findIndex((s) => s && s.id === op.sceneId);
+        if (currentIndex === -1) return next;
+        const [moved] = next.splice(currentIndex, 1);
+        const target = Math.min(Math.max(op.toIndex, 0), next.length);
+        next.splice(target, 0, moved);
+        return next;
+      });
+    } else if (op.type === "deletePlaceholder") {
+      const nextVisibleCount = Math.max(op.prevVisibleCount - 1, scenes.length);
+      setVisibleCount(nextVisibleCount);
+      if (typeof window !== "undefined") {
         try {
-          const key = `sceneList:${projectId}`
-          const payload = JSON.stringify({ visibleCount: nextVisibleCount })
-          window.localStorage.setItem(key, payload)
+          const key = `sceneList:${projectId}`;
+          const payload = JSON.stringify({ visibleCount: nextVisibleCount });
+          window.localStorage.setItem(key, payload);
         } catch {}
       }
-      setUndoOpIndex(nextIndex)
-    } else if (op.type === 'addPlaceholder') {
-      const nextVisibleCount = op.prevVisibleCount + 1
-      setVisibleCount(nextVisibleCount)
-      if (typeof window !== 'undefined') {
+      setUndoOpIndex(nextIndex);
+    } else if (op.type === "addPlaceholder") {
+      const nextVisibleCount = op.prevVisibleCount + 1;
+      setVisibleCount(nextVisibleCount);
+      if (typeof window !== "undefined") {
         try {
-          const key = `sceneList:${projectId}`
-          const payload = JSON.stringify({ visibleCount: nextVisibleCount })
-          window.localStorage.setItem(key, payload)
+          const key = `sceneList:${projectId}`;
+          const payload = JSON.stringify({ visibleCount: nextVisibleCount });
+          window.localStorage.setItem(key, payload);
         } catch {}
       }
     }
 
-    setHistoryIndex(nextIndex)
-  }
+    setHistoryIndex(nextIndex);
+  };
 
-  const canUndo = historyIndex >= 0
-  const canRedo = historyIndex < history.length - 1
+  const canUndo = historyIndex >= 0;
+  const canRedo = historyIndex < history.length - 1;
 
   const handleSceneContextMenu = (event, scene, index) => {
-    event.preventDefault()
+    event.preventDefault();
     if (scene) {
-      const confirmed = window.confirm('このシーンを削除しますか？')
+      const confirmed = window.confirm("このシーンを削除しますか？");
       if (confirmed) {
-        handleDeleteScene(scene)
+        handleDeleteScene(scene);
       }
     } else {
       // 空のシーン（プレースホルダー）
-      if (index < scenes.length || index >= visibleCount) return
-      const confirmed = window.confirm('この空のシーンを削除しますか？')
+      if (index < scenes.length || index >= visibleCount) return;
+      const confirmed = window.confirm("この空のシーンを削除しますか？");
       if (confirmed) {
-        handleDeletePlaceholder()
+        handleDeletePlaceholder();
       }
     }
-  }
+  };
 
   const handleDragStart = (event, sceneId) => {
-    if (!sceneId) return
-    setDraggingSceneId(sceneId)
-    setDragOverIndex(null)
+    if (!sceneId) return;
+    setDraggingSceneId(sceneId);
+    setDragOverIndex(null);
     if (event.dataTransfer) {
-      event.dataTransfer.effectAllowed = 'move'
+      event.dataTransfer.effectAllowed = "move";
       try {
-        event.dataTransfer.setData('text/plain', sceneId)
+        event.dataTransfer.setData("text/plain", sceneId);
       } catch {}
     }
-  }
+  };
 
   const handleDragOver = (event, index) => {
-    if (!draggingSceneId) return
-    event.preventDefault()
-    setDragOverIndex(index)
-  }
+    if (!draggingSceneId) return;
+    event.preventDefault();
+    setDragOverIndex(index);
+  };
 
   const handleDrop = (event, index) => {
-    if (!draggingSceneId) return
-    event.preventDefault()
+    if (!draggingSceneId) return;
+    event.preventDefault();
 
-    const fromIndex = scenes.findIndex((s) => s && s.id === draggingSceneId)
-    const toIndex = index
+    const fromIndex = scenes.findIndex((s) => s && s.id === draggingSceneId);
+    const toIndex = index;
     if (fromIndex === -1 || toIndex === -1 || fromIndex === toIndex) {
-      setDraggingSceneId(null)
-      setDragOverIndex(null)
-      return
+      setDraggingSceneId(null);
+      setDragOverIndex(null);
+      return;
     }
 
     setScenes((prev) => {
-      const next = [...prev]
-      const currentFrom = next.findIndex((s) => s && s.id === draggingSceneId)
-      if (currentFrom === -1) return next
-      const [moved] = next.splice(currentFrom, 1)
-      const target = Math.min(Math.max(toIndex, 0), next.length)
-      next.splice(target, 0, moved)
-      return next
-    })
+      const next = [...prev];
+      const currentFrom = next.findIndex((s) => s && s.id === draggingSceneId);
+      if (currentFrom === -1) return next;
+      const [moved] = next.splice(currentFrom, 1);
+      const target = Math.min(Math.max(toIndex, 0), next.length);
+      next.splice(target, 0, moved);
+      return next;
+    });
 
     const op = {
-      type: 'reorderScene',
+      type: "reorderScene",
       sceneId: draggingSceneId,
       fromIndex,
       toIndex,
-    }
+    };
 
     const baseHistory =
-      historyIndex >= 0 ? history.slice(0, historyIndex + 1) : history.slice(0, 0)
-    const newHistory = [...baseHistory, op]
-    setHistory(newHistory)
-    const newIndex = newHistory.length - 1
-    setHistoryIndex(newIndex)
+      historyIndex >= 0
+        ? history.slice(0, historyIndex + 1)
+        : history.slice(0, 0);
+    const newHistory = [...baseHistory, op];
+    setHistory(newHistory);
+    const newIndex = newHistory.length - 1;
+    setHistoryIndex(newIndex);
 
-    setDraggingSceneId(null)
-    setDragOverIndex(null)
-  }
+    setDraggingSceneId(null);
+    setDragOverIndex(null);
+  };
 
   const handleDragEnd = () => {
-    setDraggingSceneId(null)
-    setDragOverIndex(null)
-  }
+    setDraggingSceneId(null);
+    setDragOverIndex(null);
+  };
 
   if (!project) {
     return (
@@ -563,7 +573,7 @@ export default function SceneListPage() {
           </div>
         </header>
       </div>
-    )
+    );
   }
 
   return (
@@ -588,40 +598,44 @@ export default function SceneListPage() {
 
       <section className="scene-list" aria-label="シーン一覧">
         {Array.from({ length: visibleCount }).map((_, index) => {
-          const scene = scenes[index]
-          const isPlaceholder = !scene
-          const sceneIdForLink = scene?.id ?? `placeholder-${index + 1}`
-          const key = scene?.id ?? sceneIdForLink
+          const scene = scenes[index];
+          const isPlaceholder = !scene;
+          const sceneIdForLink = scene?.id ?? `placeholder-${index + 1}`;
+          const key = scene?.id ?? sceneIdForLink;
 
-          const baseSceneForDisplay =
-            scene || {
-              id: sceneIdForLink,
-              time: '0:00',
-              sceneName: `SCENE ${index + 1}`,
-              lighting: DEFAULT_LIGHT_LABELS,
-              memo: '',
-            }
+          const baseSceneForDisplay = scene || {
+            id: sceneIdForLink,
+            time: "0:00",
+            sceneName: `SCENE ${index + 1}`,
+            lighting: DEFAULT_LIGHT_LABELS,
+            memo: "",
+          };
 
           const display = getSceneDisplayData(
             project.id,
             baseSceneForDisplay,
             scene ? sceneLightCache[scene.id] : null
-          )
-          const timeText = display.timeText || baseSceneForDisplay.time || '0:00'
+          );
+          const timeText =
+            display.timeText || baseSceneForDisplay.time || "0:00";
           const sceneName =
-            display.sceneName || baseSceneForDisplay.sceneName || `SCENE ${index + 1}`
-          const isDragOver = dragOverIndex === index && !!draggingSceneId
+            display.sceneName ||
+            baseSceneForDisplay.sceneName ||
+            `SCENE ${index + 1}`;
+          const isDragOver = dragOverIndex === index && !!draggingSceneId;
 
-          const previewKey = scene?.id ?? sceneIdForLink
-          const previewSrc = scenePreviews.get(previewKey) ?? null
+          const previewKey = scene?.id ?? sceneIdForLink;
+          const previewSrc = scenePreviews.get(previewKey) ?? null;
 
           const card = (
             <article
               className={`scene-card${
-                isDragOver ? ' scene-card-drop-target' : ''
+                isDragOver ? " scene-card-drop-target" : ""
               }`}
               draggable={!!scene}
-              onDragStart={scene ? (e) => handleDragStart(e, scene.id) : undefined}
+              onDragStart={
+                scene ? (e) => handleDragStart(e, scene.id) : undefined
+              }
               onDragEnd={scene ? handleDragEnd : undefined}
               onDragOver={scene ? (e) => handleDragOver(e, index) : undefined}
               onDrop={scene ? (e) => handleDrop(e, index) : undefined}
@@ -633,10 +647,10 @@ export default function SceneListPage() {
                     <div className="project-detail-field-box">{timeText}</div>
                   </div>
                   <div className="project-detail-field">
-                    <span className="project-detail-field-label">SCENE NAME</span>
-                    <div className="project-detail-field-box">
-                      {sceneName}
-                    </div>
+                    <span className="project-detail-field-label">
+                      SCENE NAME
+                    </span>
+                    <div className="project-detail-field-box">{sceneName}</div>
                   </div>
                   <div className="page-number">{index + 1}</div>
                 </div>
@@ -645,10 +659,16 @@ export default function SceneListPage() {
               <div className="scene-card-body">
                 <div className="scene-card-stage">
                   {previewSrc ? (
-                    <img className="scene-preview" src={previewSrc} alt="Scene preview" />
+                    <img
+                      className="scene-preview"
+                      src={previewSrc}
+                      alt="Scene preview"
+                    />
                   ) : (
                     <div className="project-detail-stage-placeholder">
-                      <span>{isPlaceholder ? 'New Scene' : 'Stage Preview'}</span>
+                      <span>
+                        {isPlaceholder ? "New Scene" : "Stage Preview"}
+                      </span>
                     </div>
                   )}
                 </div>
@@ -664,17 +684,32 @@ export default function SceneListPage() {
                               {light.channel || `Light ${i + 1}`}
                             </span>
                             <span className="scene-card-lighting-level">
-                              {typeof light.level === 'number' ? `${light.level}%` : ''}
+                              {typeof light.level === "number"
+                                ? `${light.level}%`
+                                : ""}
                             </span>
-                            <span
+                            {/* <span
                               className="scene-card-lighting-color"
                               style={{ backgroundColor: light.color || '#FDF7A1' }}
-                            />
+                            /> */}
+                            <svg
+                              className="scene-card-lighting-color"
+                              viewBox="0 0 1 1"
+                              aria-label="lighting color"
+                            >
+                              <rect
+                                width="1"
+                                height="1"
+                                fill={light.color ?? "#FDF7A1"}
+                              />
+                            </svg>
                           </li>
                         ))}
                       </ul>
                     ) : (
-                      <p className="scene-card-memo">ライティング情報がありません。</p>
+                      <p className="scene-card-memo">
+                        ライティング情報がありません。
+                      </p>
                     )}
                   </div>
                   <div className="scene-card-panel">
@@ -690,7 +725,7 @@ export default function SceneListPage() {
                 </div>
               </div>
             </article>
-          )
+          );
 
           return (
             <Link
@@ -699,14 +734,14 @@ export default function SceneListPage() {
               className="scene-card-link"
               onClick={(e) => {
                 if (draggingSceneId) {
-                  e.preventDefault()
+                  e.preventDefault();
                 }
               }}
               onContextMenu={(e) => handleSceneContextMenu(e, scene, index)}
             >
               {card}
             </Link>
-          )
+          );
         })}
       </section>
 
@@ -752,5 +787,5 @@ export default function SceneListPage() {
       </div>
       <UnityContainer visible={false} />
     </div>
-  )
+  );
 }
