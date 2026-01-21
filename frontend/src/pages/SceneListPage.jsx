@@ -1,5 +1,5 @@
-import { useParams, Link } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
 import { findProject } from "../mock/projects.js";
 import { renderOnUnity } from "../unity.js";
 import UnityContainer from "../UnityContainer.jsx";
@@ -151,9 +151,33 @@ function getSceneDisplayData(projectId, scene, serverData) {
   return { lightingControls, memoText, timeText, sceneName };
 }
 
+function createPlaceholderScene(displayIndex, placeholderId) {
+  const id = placeholderId ?? `placeholder-${displayIndex}`;
+  return {
+    id,
+    time: "0:00",
+    sceneName: `SCENE ${displayIndex}`,
+    lighting: DEFAULT_LIGHT_LABELS,
+    memo: "",
+    isPlaceholder: true,
+  };
+}
+
+function fillWithPlaceholders(baseScenes, desiredCount) {
+  const next = Array.isArray(baseScenes) ? [...baseScenes] : [];
+  for (let index = next.length; index < desiredCount; index += 1) {
+    next.push(createPlaceholderScene(index + 1));
+  }
+  return next;
+}
+
 export default function SceneListPage() {
   const { projectId } = useParams();
   const project = findProject(projectId);
+
+  const navigate = useNavigate();
+
+  const isDraggingRef = useRef(false);
 
   const [scenes, setScenes] = useState(project?.scenes || []);
   const [sceneLightCache, setSceneLightCache] = useState({});
@@ -221,7 +245,6 @@ export default function SceneListPage() {
   }, [project?.id, scenes, sceneLightCache, visibleCount]);
 
   useEffect(() => {
-    setScenes(project?.scenes || []);
     setSceneLightCache({});
     // プロジェクトが変わったら表示件数と履歴をリセット
     const baseScenesCount = project?.scenes?.length || 0;
@@ -244,6 +267,7 @@ export default function SceneListPage() {
     }
 
     setVisibleCount(initialVisibleCount);
+    setScenes(fillWithPlaceholders(project?.scenes || [], initialVisibleCount));
     setHistory([]);
     setHistoryIndex(-1);
     setUndoOpIndex(null);
@@ -292,7 +316,12 @@ export default function SceneListPage() {
     const sceneIndex = scenes.findIndex((s) => s.id === scene.id);
     if (sceneIndex === -1) return;
 
-    setScenes((prev) => prev.filter((s) => s.id !== scene.id));
+    setScenes((prev) =>
+      fillWithPlaceholders(
+        prev.filter((s) => s && s.id !== scene.id),
+        visibleCount
+      )
+    );
 
     const op = { type: "deleteScene", scene, index: sceneIndex };
 
@@ -312,6 +341,8 @@ export default function SceneListPage() {
     const nextVisibleCount = prevVisibleCount + 1;
 
     setVisibleCount(nextVisibleCount);
+
+    setScenes((prev) => fillWithPlaceholders(prev, nextVisibleCount));
 
     if (typeof window !== "undefined") {
       try {
@@ -333,12 +364,33 @@ export default function SceneListPage() {
     setHistoryIndex(newIndex);
   };
 
-  const handleDeletePlaceholder = () => {
-    const prevVisibleCount = visibleCount;
-    if (prevVisibleCount <= scenes.length) return;
+  const handleDeletePlaceholder = (placeholderScene) => {
+    if (!placeholderScene) return;
+    if (!placeholderScene.isPlaceholder) return;
 
-    const nextVisibleCount = Math.max(prevVisibleCount - 1, scenes.length);
+    const prevVisibleCount = visibleCount;
+
+    const placeholderIndex = scenes.findIndex(
+      (s) => s && s.id === placeholderScene.id
+    );
+    if (placeholderIndex === -1) return;
+
+    const baseRealScenesCount = (project?.scenes?.length || 0) +
+      scenes.filter((s) => s && !s.isPlaceholder && !project?.scenes?.some((p) => p.id === s.id)).length;
+
+    const nextVisibleCount = Math.max(prevVisibleCount - 1, baseRealScenesCount, 3);
+
+    if (nextVisibleCount === prevVisibleCount) return;
+
     setVisibleCount(nextVisibleCount);
+
+    setScenes((prev) => {
+      const next = [...prev];
+      const idx = next.findIndex((s) => s && s.id === placeholderScene.id);
+      if (idx === -1) return next;
+      next.splice(idx, 1);
+      return next;
+    });
 
     if (typeof window !== "undefined") {
       try {
@@ -348,7 +400,12 @@ export default function SceneListPage() {
       } catch {}
     }
 
-    const op = { type: "deletePlaceholder", prevVisibleCount };
+    const op = {
+      type: "deletePlaceholder",
+      prevVisibleCount,
+      scene: placeholderScene,
+      index: placeholderIndex,
+    };
 
     const baseHistory =
       historyIndex >= 0
@@ -389,7 +446,14 @@ export default function SceneListPage() {
       setScenes((prev) => {
         const next = [...prev];
         next.splice(op.index, 0, op.scene);
-        return next;
+        if (next.length <= visibleCount) return fillWithPlaceholders(next, visibleCount);
+        for (let i = next.length - 1; i >= 0; i -= 1) {
+          if (next[i]?.isPlaceholder) {
+            next.splice(i, 1);
+            break;
+          }
+        }
+        return next.slice(0, visibleCount);
       });
     } else if (op.type === "reorderScene") {
       setScenes((prev) => {
@@ -404,6 +468,13 @@ export default function SceneListPage() {
     } else if (op.type === "deletePlaceholder") {
       setVisibleCount(op.prevVisibleCount);
 
+      setScenes((prev) => {
+        const next = [...prev];
+        const targetIndex = Math.min(Math.max(op.index, 0), next.length);
+        next.splice(targetIndex, 0, op.scene);
+        return next.slice(0, op.prevVisibleCount);
+      });
+
       if (typeof window !== "undefined") {
         try {
           const key = `sceneList:${projectId}`;
@@ -413,6 +484,8 @@ export default function SceneListPage() {
       }
     } else if (op.type === "addPlaceholder") {
       setVisibleCount(op.prevVisibleCount);
+
+      setScenes((prev) => prev.slice(0, op.prevVisibleCount));
 
       if (typeof window !== "undefined") {
         try {
@@ -438,7 +511,12 @@ export default function SceneListPage() {
     if (!op) return;
 
     if (op.type === "deleteScene") {
-      setScenes((prev) => prev.filter((s) => s.id !== op.scene.id));
+      setScenes((prev) =>
+        fillWithPlaceholders(
+          prev.filter((s) => s && s.id !== op.scene.id),
+          visibleCount
+        )
+      );
       setUndoOpIndex(nextIndex);
     } else if (op.type === "reorderScene") {
       setScenes((prev) => {
@@ -451,8 +529,15 @@ export default function SceneListPage() {
         return next;
       });
     } else if (op.type === "deletePlaceholder") {
-      const nextVisibleCount = Math.max(op.prevVisibleCount - 1, scenes.length);
+      const nextVisibleCount = Math.max(op.prevVisibleCount - 1, 3);
       setVisibleCount(nextVisibleCount);
+      setScenes((prev) => {
+        const next = [...prev];
+        const idx = next.findIndex((s) => s && s.id === op.scene.id);
+        if (idx === -1) return next.slice(0, nextVisibleCount);
+        next.splice(idx, 1);
+        return next.slice(0, nextVisibleCount);
+      });
       if (typeof window !== "undefined") {
         try {
           const key = `sceneList:${projectId}`;
@@ -464,6 +549,7 @@ export default function SceneListPage() {
     } else if (op.type === "addPlaceholder") {
       const nextVisibleCount = op.prevVisibleCount + 1;
       setVisibleCount(nextVisibleCount);
+      setScenes((prev) => fillWithPlaceholders(prev, nextVisibleCount));
       if (typeof window !== "undefined") {
         try {
           const key = `sceneList:${projectId}`;
@@ -482,22 +568,30 @@ export default function SceneListPage() {
   const handleSceneContextMenu = (event, scene, index) => {
     event.preventDefault();
     if (scene) {
-      const confirmed = window.confirm("このシーンを削除しますか？");
-      if (confirmed) {
-        handleDeleteScene(scene);
+      if (scene.isPlaceholder) {
+        const confirmed = window.confirm("この空のシーンを削除しますか？");
+        if (confirmed) {
+          handleDeletePlaceholder(scene);
+        }
+      } else {
+        const confirmed = window.confirm("このシーンを削除しますか？");
+        if (confirmed) {
+          handleDeleteScene(scene);
+        }
       }
     } else {
       // 空のシーン（プレースホルダー）
       if (index < scenes.length || index >= visibleCount) return;
       const confirmed = window.confirm("この空のシーンを削除しますか？");
       if (confirmed) {
-        handleDeletePlaceholder();
+        handleDeletePlaceholder(createPlaceholderScene(index + 1));
       }
     }
   };
 
   const handleDragStart = (event, sceneId) => {
     if (!sceneId) return;
+    isDraggingRef.current = true;
     setDraggingSceneId(sceneId);
     setDragOverIndex(null);
     if (event.dataTransfer) {
@@ -521,6 +615,7 @@ export default function SceneListPage() {
     const fromIndex = scenes.findIndex((s) => s && s.id === draggingSceneId);
     const toIndex = index;
     if (fromIndex === -1 || toIndex === -1 || fromIndex === toIndex) {
+      isDraggingRef.current = false;
       setDraggingSceneId(null);
       setDragOverIndex(null);
       return;
@@ -552,11 +647,13 @@ export default function SceneListPage() {
     const newIndex = newHistory.length - 1;
     setHistoryIndex(newIndex);
 
+    isDraggingRef.current = false;
     setDraggingSceneId(null);
     setDragOverIndex(null);
   };
 
   const handleDragEnd = () => {
+    isDraggingRef.current = false;
     setDraggingSceneId(null);
     setDragOverIndex(null);
   };
@@ -599,17 +696,12 @@ export default function SceneListPage() {
       <section className="scene-list" aria-label="シーン一覧">
         {Array.from({ length: visibleCount }).map((_, index) => {
           const scene = scenes[index];
-          const isPlaceholder = !scene;
+          const isPlaceholder = !scene || !!scene.isPlaceholder;
           const sceneIdForLink = scene?.id ?? `placeholder-${index + 1}`;
           const key = scene?.id ?? sceneIdForLink;
 
-          const baseSceneForDisplay = scene || {
-            id: sceneIdForLink,
-            time: "0:00",
-            sceneName: `SCENE ${index + 1}`,
-            lighting: DEFAULT_LIGHT_LABELS,
-            memo: "",
-          };
+          const baseSceneForDisplay =
+            scene || createPlaceholderScene(index + 1, sceneIdForLink);
 
           const display = getSceneDisplayData(
             project.id,
@@ -637,8 +729,8 @@ export default function SceneListPage() {
                 scene ? (e) => handleDragStart(e, scene.id) : undefined
               }
               onDragEnd={scene ? handleDragEnd : undefined}
-              onDragOver={scene ? (e) => handleDragOver(e, index) : undefined}
-              onDrop={scene ? (e) => handleDrop(e, index) : undefined}
+              onDragOver={(e) => handleDragOver(e, index)}
+              onDrop={(e) => handleDrop(e, index)}
             >
               <header className="scene-card-header">
                 <div className="project-detail-fields">
@@ -725,19 +817,17 @@ export default function SceneListPage() {
           );
 
           return (
-            <Link
+            <div
               key={key}
-              to={`/projects/${project.id}/scenes/${sceneIdForLink}`}
               className="scene-card-link"
-              onClick={(e) => {
-                if (draggingSceneId) {
-                  e.preventDefault();
-                }
+              onClick={() => {
+                if (isDraggingRef.current || draggingSceneId) return;
+                navigate(`/projects/${project.id}/scenes/${sceneIdForLink}`);
               }}
               onContextMenu={(e) => handleSceneContextMenu(e, scene, index)}
             >
               {card}
-            </Link>
+            </div>
           );
         })}
       </section>
