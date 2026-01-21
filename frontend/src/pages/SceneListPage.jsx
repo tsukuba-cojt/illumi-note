@@ -73,14 +73,14 @@ function normalizeLightingControls(rawControls) {
 async function fetchLightSettings(projectId, sceneId) {
   const res = await fetch(
     `/api/projects/${encodeURIComponent(projectId)}/scenes/${encodeURIComponent(
-      sceneId
+      sceneId,
     )}/light`,
     {
       method: "GET",
       headers: {
         Accept: "application/json",
       },
-    }
+    },
   );
 
   if (res.status === 404) return null;
@@ -182,11 +182,11 @@ export default function SceneListPage() {
   const [scenes, setScenes] = useState(project?.scenes || []);
   const [sceneLightCache, setSceneLightCache] = useState({});
   const [scenePreviews, setScenePreviews] = useState(
-    /** @type {Map<string, string>} */ (new Map())
+    /** @type {Map<string, string>} */ (new Map()),
   );
 
   const [visibleCount, setVisibleCount] = useState(() =>
-    Math.max(project?.scenes?.length || 0, 3)
+    Math.max(project?.scenes?.length || 0, 3),
   );
   const [history, setHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
@@ -222,13 +222,13 @@ export default function SceneListPage() {
         const display = getSceneDisplayData(
           project.id,
           baseSceneForDisplay,
-          scene ? sceneLightCache[scene.id] ?? null : null
+          scene ? (sceneLightCache[scene.id] ?? null) : null,
         );
 
         if (canceled) return;
         newScenePreviews.set(
           sceneIdForLink,
-          await renderOnUnity(display.lightingControls)
+          await renderOnUnity(display.lightingControls),
         );
       }
 
@@ -259,7 +259,7 @@ export default function SceneListPage() {
           if (typeof parsed.visibleCount === "number") {
             initialVisibleCount = Math.max(
               baseScenesCount,
-              parsed.visibleCount
+              parsed.visibleCount,
             );
           }
         }
@@ -706,7 +706,7 @@ export default function SceneListPage() {
           const display = getSceneDisplayData(
             project.id,
             baseSceneForDisplay,
-            scene ? sceneLightCache[scene.id] : null
+            scene ? sceneLightCache[scene.id] : null,
           );
           const timeText =
             display.timeText || baseSceneForDisplay.time || "0:00";
@@ -770,7 +770,15 @@ export default function SceneListPage() {
                     {display.lightingControls.length > 0 ? (
                       <ul className="scene-card-lighting-list">
                         {display.lightingControls.map((light, i) => (
-                          <li key={i} className="scene-card-lighting-item">
+                          <li
+                            key={i}
+                            className={`scene-card-lighting-item${
+                              typeof light.level === "number" &&
+                              light.level === 0
+                                ? " scene-card-lighting-item-zero"
+                                : ""
+                            }`}
+                          >
                             <span className="scene-card-lighting-label">
                               {light.channel || `Light ${i + 1}`}
                             </span>
@@ -809,7 +817,6 @@ export default function SceneListPage() {
                       </p>
                     )}
                   </div>
-                  
                 </div>
               </div>
               <div className="page-number">{index + 1}</div>
