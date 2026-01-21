@@ -1,11 +1,13 @@
 import { useLocation, useNavigate } from 'react-router-dom'
 import { projects } from '../mock/projects.js'
+import stage1Image from './Stage1.png'
 
 const stageTemplates = [
   {
     id: 'stage-a',
     name: 'ステージA',
     description: '標準的なプロセニアム型ステージ',
+    image: stage1Image,
   },
   {
     id: 'stage-b',
@@ -70,6 +72,11 @@ export default function StagePage() {
         {stageTemplates.map((template) => (
           <article key={template.id} className="project-card">
             <div className="project-card-inner">
+              {template.image ? (
+                <div className="project-card-media">
+                  <img src={template.image} alt={`${template.name}のプレビュー`} className="project-card-image" />
+                </div>
+              ) : null}
               <h2 className="project-card-title">{template.name}</h2>
               <p className="project-card-meta">{template.description}</p>
               <button

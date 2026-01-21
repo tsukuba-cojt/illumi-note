@@ -7,9 +7,7 @@ export default function UnityRoot() {
 
   const shouldDisplay =
     matchPath('/projects/:projectId', location.pathname) ||
-    matchPath('/projects/:projectId/scenes/:sceneId', location.pathname) ||
-    matchPath('/stage', location.pathname) ||
-    matchPath('/projects/new', location.pathname)
+    matchPath('/projects/:projectId/scenes/:sceneId', location.pathname)
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -62,7 +60,7 @@ export default function UnityRoot() {
         preserveDrawingBuffer: true,
       },
     })
-    unityCanvas.classList.remove('hidden')
+    unityCanvas.classList.add('hidden')
   }, [shouldDisplay])
 
   if (!shouldDisplay) {

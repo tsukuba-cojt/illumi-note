@@ -1,7 +1,7 @@
-import UnityContainer from '../UnityContainer.jsx'
+import stage1Image from './Stage1.png'
 
 const stages = [
-  { id: 'stage-1', label: 'Stage 1', isUnityPreview: true },
+  { id: 'stage-1', label: 'Stage 1', image: stage1Image },
   { id: 'stage-2', label: 'Stage 2' },
   { id: 'stage-3', label: 'Stage 3' },
   { id: 'stage-4', label: 'Stage 4' },
@@ -18,8 +18,8 @@ export default function StageView() {
         {stages.map((stage) => (
           <article key={stage.id} className="stageview-card">
             <div className="stageview-card-media">
-              {stage.isUnityPreview ? (
-                <UnityContainer />
+              {stage.image ? (
+                <img src={stage.image} alt={`${stage.label}のプレビュー`} className="stageview-card-image" />
               ) : (
                 <div className="project-detail-stage-placeholder">
                   <span>{stage.label}</span>
@@ -32,7 +32,7 @@ export default function StageView() {
             <div className="stageview-card-footer">
               <span className="stageview-card-title">{stage.label}</span>
               <span className="project-detail-stage-note">
-                {stage.isUnityPreview ? 'このステージがライブで表示されています。' : 'プレビューは準備中です。'}
+                {stage.image ? 'このステージのプレビュー画像です。' : 'プレビューは準備中です。'}
               </span>
             </div>
           </article>

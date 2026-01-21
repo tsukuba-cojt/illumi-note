@@ -1,7 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { logout } from '../api/auth.js'
 import { fetchProfile, updateProfile } from '../api/profile.js'
 
 export default function UserProfilePage() {
+  const navigate = useNavigate()
+
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -78,6 +82,19 @@ export default function UserProfilePage() {
     }
   }
 
+  const handleLogout = async () => {
+    try {
+      await logout()
+    } catch (error) {
+      console.error('Failed to logout', error)
+    }
+
+    window.localStorage.removeItem('accessToken')
+    window.localStorage.removeItem('refreshToken')
+    window.localStorage.removeItem('currentUser')
+    navigate('/login')
+  }
+
   return (
     <div className="page page-profile">
       <section className="profile-card" aria-labelledby="profile-heading">
@@ -152,6 +169,9 @@ export default function UserProfilePage() {
           <div className="profile-actions">
             <button type="submit" className="profile-save-button" disabled={isSaving}>
               {isSaving ? '保存中…' : '保存する'}
+            </button>
+            <button type="button" className="profile-save-button profile-logout-button" onClick={handleLogout}>
+              ログアウト
             </button>
             {status ? (
               <p className={`profile-status profile-status-${status.type}`}>{status.message}</p>

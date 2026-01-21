@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { projects } from '../mock/projects.js'
-import UnityContainer from '../UnityContainer.jsx'
+import stage1Image from './Stage1.png'
 
 const stageOptions = [
   {
@@ -9,28 +9,25 @@ const stageOptions = [
     name: 'Stage 1',
     description: '標準的なライティングステージ。すぐに利用できます。',
     available: true,
-    isUnityPreview: true,
+    image: stage1Image,
   },
   {
     id: 'stage-2',
     name: 'Stage 2',
     description: '準備中。今後のアップデートで利用可能になります。',
     available: false,
-    isUnityPreview: false,
   },
   {
     id: 'stage-3',
     name: 'Stage 3',
     description: '準備中。今後のアップデートで利用可能になります。',
     available: false,
-    isUnityPreview: false,
   },
   {
     id: 'stage-4',
     name: 'Stage 4',
     description: '準備中。今後のアップデートで利用可能になります。',
     available: false,
-    isUnityPreview: false,
   },
 ]
 
@@ -109,8 +106,8 @@ export default function NewProjectPage() {
               <article key={stage.id} className="project-card stage-select-card">
                 <div className="project-card-inner stage-select-card-inner">
                   <div className="stage-select-card-media">
-                    {stage.isUnityPreview ? (
-                      <UnityContainer />
+                    {stage.image ? (
+                      <img src={stage.image} alt={`${stage.name}のプレビュー`} className="stage-select-card-image" />
                     ) : (
                       <div className="project-detail-stage-placeholder stage-select-placeholder">
                         <span>{stage.name}</span>
