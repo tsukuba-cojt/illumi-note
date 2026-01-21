@@ -1279,8 +1279,8 @@ canvas.hidden {
   position: fixed;
   left: -999999px;
   top: -999999px;
-  width: 1px !important;
+  /* width: 1px !important;
   height: 1px !important;
   opacity: 0 !important;
-  pointer-events: none !important;
+  pointer-events: none !important; */
 }
