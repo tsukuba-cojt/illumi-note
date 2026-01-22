@@ -34,5 +34,5 @@ export default function ({ visible }) {
     }
   }, [visible]);
 
-  return <div ref={containerRef} style={{ width: "100%", height: "100%" }} />;
+  return <div ref={containerRef} style={{ width: "100%", height: "100%", pointerEvents: "none" }} />;
 }

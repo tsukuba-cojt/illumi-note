@@ -1,4 +1,5 @@
 import { Outlet, Navigate } from 'react-router-dom'
+import Header from '../components/navigation/header.jsx';
 
 export default function AuthLayout() {
   const isLoggedIn =
@@ -10,6 +11,7 @@ export default function AuthLayout() {
 
   return (
     <div className="layout layout-auth">
+      <Header />
       <Outlet />
     </div>
   )
