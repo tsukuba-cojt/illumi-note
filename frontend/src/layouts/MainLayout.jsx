@@ -8,7 +8,7 @@ export default function MainLayout() {
     <div className="layout layout-main">
       <UnityRoot />
       <Header />
-      <SideNav />
+      {/* <SideNav /> */}
       <main className="layout-content">
         <Outlet />
       </main>

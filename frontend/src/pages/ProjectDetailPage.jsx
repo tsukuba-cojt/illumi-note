@@ -530,9 +530,9 @@ export default function ProjectDetailPage() {
                                 ))}
                               </div>
                             </div>
-                            <span className="lighting-level-value">
+                            {/* <span className="lighting-level-value">
                               {control.level}
-                            </span>
+                            </span> */}
                           </div>
 
                           <div className="lighting-color-group">

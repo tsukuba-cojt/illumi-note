@@ -11,7 +11,7 @@ export default function AuthLayout() {
 
   return (
     <div className="layout layout-auth">
-      <Header />
+      <Header showLinks={false} />
       <Outlet />
     </div>
   )

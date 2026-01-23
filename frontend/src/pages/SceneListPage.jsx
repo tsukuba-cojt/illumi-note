@@ -692,9 +692,9 @@ export default function SceneListPage() {
           >
             保存（PDF）
           </button>
-          <Link to="/projects" className="projects-new-button">
+          {/* <Link to="/projects" className="projects-new-button">
             プロジェクト一覧に戻る
-          </Link>
+          </Link> */}
         </div>
       </header>
 
