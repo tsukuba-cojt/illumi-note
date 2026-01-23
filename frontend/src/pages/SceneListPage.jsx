@@ -316,6 +316,7 @@ export default function SceneListPage() {
   //   }
   // }, [projectId, scenes, visibleCount, sceneLightCache])
 
+  /*
   const handleDeleteScene = (scene) => {
     if (!scene) return;
     const sceneIndex = scenes.findIndex((s) => s.id === scene.id);
@@ -340,7 +341,7 @@ export default function SceneListPage() {
     setHistoryIndex(newIndex);
     setUndoOpIndex(newIndex);
   };
-
+*/
   const handleAddPlaceholder = () => {
     const prevVisibleCount = visibleCount;
     const nextVisibleCount = prevVisibleCount + 1;
@@ -858,13 +859,13 @@ export default function SceneListPage() {
       )}
 
       <div className="scene-history-controls">
-        <button
+        {/* <button
           type="button"
           className="scene-history-button scene-add-button"
           onClick={handleAddPlaceholder}
         >
           ＋
-        </button>
+        </button> */}
         <div className="scene-history-buttons-row">
           <button
             type="button"
@@ -872,7 +873,7 @@ export default function SceneListPage() {
             onClick={handleUndo}
             disabled={!canUndo}
           >
-            ◀
+            <img src="/img/Undo.png" alt="元に戻す" className="scene-history-icon"/>
           </button>
           <button
             type="button"
@@ -880,7 +881,7 @@ export default function SceneListPage() {
             onClick={handleRedo}
             disabled={!canRedo}
           >
-            ▶
+            <img src="/img/Redo.png" alt="やり直す" className="scene-history-icon"/>
           </button>
         </div>
       </div>

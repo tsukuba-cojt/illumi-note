@@ -1198,6 +1198,11 @@ header.global > img {
   gap: 8px;
 }
 
+.scene-history-icon{
+  width: 20px;
+  height: 20px;
+}
+
 .project-detail-footer {
   display: flex;
   align-items: center;
@@ -1219,7 +1224,7 @@ header.global > img {
   height: 32px;
   border-radius: 999px;
   border: none;
-  background-color: #111827;
+  background-color: #febf00;
   color: #f9fafb;
   display: flex;
   align-items: center;
@@ -1230,7 +1235,7 @@ header.global > img {
 }
 
 .scene-history-button:disabled {
-  opacity: 0.4;
+  opacity: 0.6;
   cursor: default;
 }
 
