@@ -19,6 +19,8 @@ header.global {
   display: grid;
   grid-template-columns: auto 1fr;
   grid-template-rows: 100%;
+  position: sticky;
+  top: 0;
 }
 
 header.global > nav > ul {
