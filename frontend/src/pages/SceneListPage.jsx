@@ -686,13 +686,6 @@ export default function SceneListPage() {
           <h1 className="projects-title">{project.name}</h1>
         </div>
         <div className="projects-actions scene-list-header-actions">
-          <button
-            type="button"
-            className="projects-new-button"
-            onClick={handleExportPdf}
-          >
-            保存（PDF）
-          </button>
           {/* <Link to="/projects" className="projects-new-button">
             プロジェクト一覧に戻る
           </Link> */}
@@ -859,6 +852,20 @@ export default function SceneListPage() {
       )}
 
       <div className="scene-history-controls">
+        <button
+          type="button"
+          className="projects-new-button"
+          onClick={handleExportPdf}
+          aria-label="保存（PDF）"
+        >
+          <img
+            src="/img/ShareIcon.png"
+            alt=""
+            aria-hidden="true"
+            className="scene-history-icon"
+          />
+          <span className="sr-only">保存（PDF）</span>
+        </button>
         {/* <button
           type="button"
           className="scene-history-button scene-add-button"

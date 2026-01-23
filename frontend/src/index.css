@@ -33,14 +33,15 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #111827;
-  color: #ffffff;
+  background-color: inherit;
+  color: inherit;
   cursor: pointer;
-  transition: background-color 0.2s ease, border-color 0.2s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease,
+    color 0.2s ease;
 }
 
 button:hover {
-  background-color: #020617;
+  background-color: inherit;
 }
 
 button:focus,

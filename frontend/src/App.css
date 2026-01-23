@@ -226,9 +226,18 @@ header.global > img {
   padding: 8px 16px;
   font-size: 14px;
   font-weight: 600;
-  background-color: #111827;
+  background-color: #febf00;
   color: #ffffff;
   cursor: pointer;
+  opacity: 0.6;
+  transition: background-color 0.2s ease, opacity 0.2s ease,
+    color 0.2s ease;
+}
+
+.projects-new-button:hover:not(:disabled) {
+  background-color: #ffcc33;
+  color: #fff4d6;
+  opacity: 1;
 }
 
 .projects-grid {
@@ -1235,11 +1244,27 @@ header.global > img {
   font-size: 18px;
   font-weight: 600;
   cursor: pointer;
+  transition: background-color 0.2s ease, opacity 0.2s ease,
+    color 0.2s ease;
+  opacity: 0.6;
 }
 
 .scene-history-button:disabled {
   opacity: 0.6;
   cursor: default;
+  background-color: #ffe199;
+  color: #f4b400;
+}
+
+.scene-history-button:hover:not(:disabled) {
+  background-color: #ffcc33;
+  color: #fff4d6;
+  opacity: 1;
+}
+
+.scene-history-button:disabled:hover {
+  background-color: #ffe199;
+  color: #f4b400;
 }
 
 @media print {
