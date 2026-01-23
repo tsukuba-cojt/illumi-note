@@ -72,11 +72,11 @@ export default function NewProjectPage() {
     <div className="page page-projects">
       <header className="projects-header">
         <h1 className="projects-title">新規プロジェクト</h1>
-        <div className="projects-actions">
+        {/* <div className="projects-actions">
           <Link to="/projects" className="projects-new-button">
             プロジェクト一覧に戻る
           </Link>
-        </div>
+        </div> */}
       </header>
 
       <section className="project-detail-main new-project-creation">

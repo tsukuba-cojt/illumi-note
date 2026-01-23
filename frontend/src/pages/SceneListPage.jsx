@@ -31,6 +31,7 @@ function createDefaultLightingControls() {
     channel,
     level: 0,
     color: "#FDF7A1",
+    isOn: true,
   }));
 }
 
@@ -51,11 +52,13 @@ function normalizeLightingControls(rawControls) {
     const level = typeof item.level === "number" ? item.level : 0;
     const color =
       typeof item.color === "string" && item.color ? item.color : "#FDF7A1";
+    const isOn = item.isOn ?? true;
 
     byLabel.set(channel, {
       channel,
       level,
       color,
+      isOn,
     });
   });
 
@@ -66,6 +69,7 @@ function normalizeLightingControls(rawControls) {
       channel,
       level: 0,
       color: "#FDF7A1",
+      isOn: true,
     };
   });
 }
@@ -99,6 +103,7 @@ function getSceneDisplayData(projectId, scene, serverData) {
         channel: baseLabel,
         level: initialLevel,
         color: "#FDF7A1",
+        isOn: true,
       };
     }) || [];
 
@@ -687,9 +692,9 @@ export default function SceneListPage() {
           >
             保存（PDF）
           </button>
-          <Link to="/projects" className="projects-new-button">
+          {/* <Link to="/projects" className="projects-new-button">
             プロジェクト一覧に戻る
-          </Link>
+          </Link> */}
         </div>
       </header>
 
@@ -773,8 +778,7 @@ export default function SceneListPage() {
                           <li
                             key={i}
                             className={`scene-card-lighting-item${
-                              typeof light.level === "number" &&
-                              light.level === 0
+                              light.level === 0 || !light.isOn
                                 ? " scene-card-lighting-item-zero"
                                 : ""
                             }`}
@@ -783,9 +787,10 @@ export default function SceneListPage() {
                               {light.channel || `Light ${i + 1}`}
                             </span>
                             <span className="scene-card-lighting-level">
-                              {typeof light.level === "number"
+                              {/* typeof light.level === "number"
                                 ? `${light.level}%`
-                                : ""}
+                                : "" */}
+                              {light.isOn ? `${light.level}%` : "0%"}
                             </span>
                             <svg
                               className="scene-card-lighting-color"
