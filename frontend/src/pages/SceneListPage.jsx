@@ -755,6 +755,40 @@ export default function SceneListPage() {
               onDragOver={(e) => handleDragOver(e, index)}
               onDrop={(e) => handleDrop(e, index)}
             >
+              <button
+                type="button"
+                className="scene-card-delete-button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (scene) {
+                    if (scene.isPlaceholder) {
+                      const confirmed = window.confirm("この空のシーンを削除しますか？");
+                      if (confirmed) {
+                        handleDeletePlaceholder(scene);
+                      }
+                    } else {
+                      const confirmed = window.confirm("このシーンを削除しますか？");
+                      if (confirmed) {
+                        handleDeleteScene(scene);
+                      }
+                    }
+                  } else {
+                    if (index < scenes.length || index >= visibleCount) return;
+                    const confirmed = window.confirm("この空のシーンを削除しますか？");
+                    if (confirmed) {
+                      handleDeletePlaceholder(createPlaceholderScene(index + 1));
+                    }
+                  }
+                }}
+                aria-label="シーンを削除"
+              >
+                <img
+                  src="/img/trashbin.png"
+                  alt=""
+                  aria-hidden="true"
+                  className="scene-card-delete-icon"
+                />
+              </button>
               <header className="scene-card-header">
                 <div className="project-detail-fields">
                   <div className="project-detail-field">
@@ -854,7 +888,6 @@ export default function SceneListPage() {
                 if (isDraggingRef.current || draggingSceneId) return;
                 navigate(`/projects/${project.id}/scenes/${sceneIdForLink}`);
               }}
-              onContextMenu={(e) => handleSceneContextMenu(e, scene, index)}
             >
               {card}
             </div>

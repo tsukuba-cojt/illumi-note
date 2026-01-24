@@ -21,7 +21,7 @@ header.global {
   grid-template-rows: 100%;
   position: sticky;
   top: 0;
-  z-index: 1
+  z-index: 1000;
 }
 
 header.global > nav > ul {
@@ -1137,6 +1137,7 @@ header.global > img {
 }
 
 .scene-card {
+  position: relative;
   transition: transform 0.2s ease;
 }
 
@@ -1146,16 +1147,35 @@ header.global > img {
 
 .scene-card-delete-button {
   position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 72px;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
   border: none;
-  background-color: #b91c1c;
-  color: #f9fafb;
-  font-size: 12px;
-  font-weight: 600;
+  border-radius: 50%;
+  background-color: #febf00;
+  padding: 6px;
   cursor: pointer;
+  z-index: 10;
+  transition: transform 0.2s ease;
+  box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px rgba(254, 191, 0, 0.6);
+  outline: none;
+}
+
+.scene-card-delete-button:hover {
+  transform: scale(1.1);
+}
+
+.scene-card-delete-button:focus,
+.scene-card-delete-button:focus-visible {
+  outline: none;
+}
+
+.scene-card-delete-icon {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: brightness(0) saturate(100%) invert(20%) sepia(10%) saturate(500%) hue-rotate(0deg) brightness(0.3);
 }
 
 .scene-undo-toast {
@@ -1213,7 +1233,7 @@ header.global > img {
 .floating-add-button {
   position: fixed;
   left: 50%;
-  bottom: 32px;
+  bottom: 8px;
   transform: translate(-50%, 24px);
   opacity: 0;
   pointer-events: none;
