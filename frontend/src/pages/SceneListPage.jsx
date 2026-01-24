@@ -199,6 +199,8 @@ export default function SceneListPage() {
   const [undoCountdown, setUndoCountdown] = useState(0);
   const [draggingSceneId, setDraggingSceneId] = useState(null);
   const [dragOverIndex, setDragOverIndex] = useState(null);
+  const [showFloatingAdd, setShowFloatingAdd] = useState(false);
+  const bottomSentinelRef = useRef(null);
 
   const handleExportPdf = () => {
     if (typeof window === "undefined") return;
@@ -280,6 +282,28 @@ export default function SceneListPage() {
     setDraggingSceneId(null);
     setDragOverIndex(null);
   }, [projectId, project]);
+
+  useEffect(() => {
+    const sentinel = bottomSentinelRef.current;
+    if (typeof window === "undefined" || !sentinel) {
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setShowFloatingAdd(entry.isIntersecting);
+      },
+      {
+        threshold: 0.5,
+      },
+    );
+
+    observer.observe(sentinel);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [scenes, visibleCount]);
 
   // useEffect(() => {
   //   if (typeof window === 'undefined') return
@@ -893,6 +917,19 @@ export default function SceneListPage() {
         </div>
       </div>
       <UnityContainer visible={false} />
+      <div
+        ref={bottomSentinelRef}
+        className="scene-list-bottom-sentinel"
+        aria-hidden="true"
+      />
+      <button
+        type="button"
+        className={`floating-add-button${showFloatingAdd ? " is-visible" : ""}`}
+        onClick={handleAddPlaceholder}
+        aria-label="ページを追加"
+      >
+        <span className="floating-add-circle">＋</span>
+      </button>
     </div>
   );
 }
