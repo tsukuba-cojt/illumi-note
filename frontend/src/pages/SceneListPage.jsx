@@ -340,17 +340,18 @@ export default function SceneListPage() {
   //   }
   // }, [projectId, scenes, visibleCount, sceneLightCache])
 
-  /*
   const handleDeleteScene = (scene) => {
     if (!scene) return;
-    const sceneIndex = scenes.findIndex((s) => s.id === scene.id);
+    if (scene.isPlaceholder) return;
+
+    const sceneIndex = scenes.findIndex((s) => s && s.id === scene.id);
     if (sceneIndex === -1) return;
 
     setScenes((prev) =>
       fillWithPlaceholders(
         prev.filter((s) => s && s.id !== scene.id),
-        visibleCount
-      )
+        visibleCount,
+      ),
     );
 
     const op = { type: "deleteScene", scene, index: sceneIndex };
@@ -365,7 +366,7 @@ export default function SceneListPage() {
     setHistoryIndex(newIndex);
     setUndoOpIndex(newIndex);
   };
-*/
+
   const handleAddPlaceholder = () => {
     const prevVisibleCount = visibleCount;
     const nextVisibleCount = prevVisibleCount + 1;

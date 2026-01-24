@@ -231,13 +231,22 @@ header.global > img {
   cursor: pointer;
   opacity: 0.6;
   transition: background-color 0.2s ease, opacity 0.2s ease,
-    color 0.2s ease;
+    color 0.2s ease, transform 0.2s ease;
 }
 
 .projects-new-button:hover:not(:disabled) {
   background-color: #ffcc33;
   color: #fff4d6;
   opacity: 1;
+  transform: scale(1.1);
+}
+
+.page-projects .projects-new-button {
+  color: #111827;
+}
+
+.page-projects .projects-new-button:hover:not(:disabled) {
+  color: #111827;
 }
 
 .projects-grid {
@@ -695,6 +704,38 @@ header.global > img {
   margin: 12px 0 0;
   font-size: 14px;
   color: #6b7280;
+}
+
+.profile-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.profile-save-button {
+  border: none;
+  border-radius: 999px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  background-color: #febf00;
+  color: #111827;
+  cursor: pointer;
+  opacity: 0.9;
+  transition: background-color 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
+}
+
+.profile-save-button:hover:not(:disabled) {
+  background-color: #ffcc33;
+  opacity: 1;
+  transform: scale(1.05);
+}
+
+.profile-save-button:disabled {
+  opacity: 0.6;
+  cursor: default;
+  transform: none;
 }
 
 .sr-only {
@@ -1182,15 +1223,16 @@ header.global > img {
   position: fixed;
   left: 24px;
   bottom: 24px;
-  background-color: #111827;
-  color: #f9fafb;
+  background-color: #ffffff;
+  color: #111827;
   padding: 8px 12px;
   border-radius: 999px;
+  border: 2px solid #febf00;
   display: flex;
   align-items: center;
   gap: 8px;
   font-size: 12px;
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.3);
+  box-shadow: none;
   z-index: 40;
 }
 
@@ -1200,13 +1242,13 @@ header.global > img {
   padding: 4px 10px;
   font-size: 12px;
   font-weight: 600;
-  background-color: #f97316;
+  background-color: #febf00;
   color: #111827;
   cursor: pointer;
 }
 
 .scene-undo-button:hover:not(:disabled) {
-  background-color: #ea580c;
+  background-color: #ffcc33;
 }
 
 .scene-undo-button:disabled {
@@ -1319,7 +1361,7 @@ header.global > img {
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.2s ease, opacity 0.2s ease,
-    color 0.2s ease;
+    color 0.2s ease, transform 0.2s ease;
   opacity: 0.6;
 }
 
@@ -1334,6 +1376,7 @@ header.global > img {
   background-color: #ffcc33;
   color: #fff4d6;
   opacity: 1;
+  transform: scale(1.1);
 }
 
 .scene-history-button:disabled:hover {
