@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { projects } from '../mock/projects.js'
+import { getProjects, addProject } from '../stores/projectsStore.js'
 import stage1Image from './Stage1.png'
 
 const stageOptions = [
@@ -46,7 +46,8 @@ export default function NewProjectPage() {
 
     setIsCreating(true)
 
-    const nextIdNumber = projects.reduce((max, project) => {
+    const currentProjects = getProjects()
+    const nextIdNumber = currentProjects.reduce((max, project) => {
       const match = String(project.id).match(/^p(\d+)$/)
       if (!match) return max
       const num = Number(match[1])
@@ -64,7 +65,7 @@ export default function NewProjectPage() {
       stageTemplateId: stageId,
     }
 
-    projects.push(newProject)
+    addProject(newProject)
     navigate(`/projects/${newProjectId}`)
   }
 

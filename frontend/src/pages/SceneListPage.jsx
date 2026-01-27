@@ -1,6 +1,6 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
-import { findProject } from "../mock/projects.js";
+import { findProject } from "../stores/projectsStore.js";
 import { renderOnUnity } from "../unity.js";
 import UnityContainer from "../UnityContainer.jsx";
 
