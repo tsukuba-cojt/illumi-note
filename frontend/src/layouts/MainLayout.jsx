@@ -1,7 +1,7 @@
 import { Outlet } from 'react-router-dom'
 import UnityRoot from '../UnityRoot.jsx'
 import SideNav from '../components/navigation/SideNav.jsx'
-import Header from '../components/navigation/header.jsx';
+import Header from '../components/navigation/Header.jsx';
 
 export default function MainLayout() {
   return (

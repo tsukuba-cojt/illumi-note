@@ -1,5 +1,5 @@
 import { Outlet, Navigate } from 'react-router-dom'
-import Header from '../components/navigation/header.jsx';
+import Header from '../components/navigation/Header.jsx';
 
 export default function AuthLayout() {
   const isLoggedIn =
