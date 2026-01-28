@@ -249,6 +249,12 @@ header.global > img {
   color: #111827;
 }
 
+.page-projects .projects-new-button:focus,
+.page-projects .projects-new-button:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
 .projects-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -260,6 +266,7 @@ header.global > img {
   border-radius: 16px;
   border: 1px solid #e4e4e7;
   aspect-ratio: 1 / 1;
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -275,6 +282,77 @@ header.global > img {
 .project-card-dragging {
   opacity: 0.5;
   transform: rotate(5deg);
+}
+
+.project-card-selectable .project-card-inner {
+  width: 100%;
+  text-align: left;
+}
+
+.project-card-select-button {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+}
+
+.project-card-select-toggle {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.project-card-select-toggle:focus,
+.project-card-select-toggle:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.project-card-select-button:focus,
+.project-card-select-button:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.project-card-select-check {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  border: 2px solid #d1d5db;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 12px;
+  color: #111827;
+  background: #ffffff;
+}
+
+.project-card-select-check-image {
+  width: 14px;
+  height: 14px;
+  display: block;
+  object-fit: contain;
+}
+
+.project-card-selected {
+  border-color: #febf00;
+  box-shadow: 0 0 0 2px rgba(254, 191, 0, 0.35);
+}
+
+.project-card-selected .project-card-select-check {
+  border-color: #febf00;
+  background: #febf00;
 }
 
 .page-stage .project-card,

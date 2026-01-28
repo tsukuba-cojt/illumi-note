@@ -908,18 +908,7 @@ export default function SceneListPage() {
         })}
       </section>
 
-      {undoOpIndex != null && (
-        <div className="scene-undo-toast">
-          <span>シーンを削除しました。</span>
-          <button
-            type="button"
-            className="scene-undo-button"
-            onClick={handleUndo}
-          >
-            削除を取り消す ({undoCountdown})
-          </button>
-        </div>
-      )}
+      {false}
 
       <div className="scene-history-controls">
         <button
