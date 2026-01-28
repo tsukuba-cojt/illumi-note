@@ -275,7 +275,16 @@ header.global > img {
   transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
-.project-card:active {
+.project-card:not(.project-card-selectable) {
+  padding: 0;
+  cursor: pointer;
+}
+
+.project-card:not(.project-card-selectable):active {
+  cursor: pointer;
+}
+
+.project-card.project-card-selectable:active {
   cursor: grabbing;
 }
 
@@ -411,6 +420,16 @@ header.global > img {
   width: 100%;
   box-sizing: border-box;
 }
+
+ .project-card:not(.project-card-selectable) .project-card-inner {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+  padding: 16px;
+  color: inherit;
+  text-decoration: none;
+ }
 
 .project-card-title {
   margin: 0 0 8px;
