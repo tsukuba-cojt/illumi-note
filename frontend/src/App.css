@@ -39,6 +39,7 @@ header.global > nav a {
   color: #111827;
   font-size: 18px;
   font-weight: bold;
+  padding: 35px 30px;
 }
 
 header.global > nav a:hover {
@@ -296,6 +297,10 @@ header.global > img {
 .project-card-selectable .project-card-inner {
   width: 100%;
   text-align: left;
+}
+
+.project-card-inner a {
+  padding: 50px;
 }
 
 .project-card-select-button {
