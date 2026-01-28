@@ -1,6 +1,6 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
-import { findProject } from "../mock/projects.js";
+import { getProjects, subscribe } from "../stores/projectsStore.js";
 import { renderOnUnity } from "../unity.js";
 import UnityContainer from "../UnityContainer.jsx";
 
@@ -178,7 +178,9 @@ function fillWithPlaceholders(baseScenes, desiredCount) {
 
 export default function SceneListPage() {
   const { projectId } = useParams();
-  const project = findProject(projectId);
+  const [project, setProject] = useState(() =>
+    getProjects().find((p) => p && p.id === projectId)
+  );
 
   const navigate = useNavigate();
 
@@ -201,6 +203,15 @@ export default function SceneListPage() {
   const [dragOverIndex, setDragOverIndex] = useState(null);
   const [showFloatingAdd, setShowFloatingAdd] = useState(false);
   const bottomSentinelRef = useRef(null);
+
+  useEffect(() => {
+    const update = () => {
+      setProject(getProjects().find((p) => p && p.id === projectId));
+    };
+
+    update();
+    return subscribe(update);
+  }, [projectId]);
 
   const handleExportPdf = () => {
     if (typeof window === "undefined") return;
@@ -233,10 +244,14 @@ export default function SceneListPage() {
         );
 
         if (canceled) return;
-        newScenePreviews.set(
-          sceneIdForLink,
-          await renderOnUnity(display.lightingControls),
-        );
+        try {
+          newScenePreviews.set(
+            sceneIdForLink,
+            await renderOnUnity(display.lightingControls),
+          );
+        } catch {
+          newScenePreviews.set(sceneIdForLink, null);
+        }
       }
 
       if (!canceled) {
@@ -264,10 +279,7 @@ export default function SceneListPage() {
         if (saved) {
           const parsed = JSON.parse(saved);
           if (typeof parsed.visibleCount === "number") {
-            initialVisibleCount = Math.max(
-              baseScenesCount,
-              parsed.visibleCount,
-            );
+            initialVisibleCount = Math.max(baseScenesCount, parsed.visibleCount);
           }
         }
       } catch {}
@@ -281,7 +293,7 @@ export default function SceneListPage() {
     setUndoCountdown(0);
     setDraggingSceneId(null);
     setDragOverIndex(null);
-  }, [projectId, project]);
+  }, [projectId, project?.id]);
 
   useEffect(() => {
     const sentinel = bottomSentinelRef.current;
@@ -896,18 +908,7 @@ export default function SceneListPage() {
         })}
       </section>
 
-      {undoOpIndex != null && (
-        <div className="scene-undo-toast">
-          <span>シーンを削除しました。</span>
-          <button
-            type="button"
-            className="scene-undo-button"
-            onClick={handleUndo}
-          >
-            削除を取り消す ({undoCountdown})
-          </button>
-        </div>
-      )}
+      {false}
 
       <div className="scene-history-controls">
         <button

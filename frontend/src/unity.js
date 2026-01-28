@@ -54,7 +54,7 @@ export async function renderOnUnity(lightingControls) {
   );
   const frameReady = new Promise((resolve, reject) => {
     window.addEventListener(FRAME_READY_EVENT, resolve, { once: true });
-    setTimeout(() => reject(`${FRAME_READY_EVENT} timed out`), 1000);
+    setTimeout(() => reject(`${FRAME_READY_EVENT} timed out`), 5000);
   });
   unityInstance.SendMessage("RenderManager", "RenderSingleFrame");
   await frameReady;

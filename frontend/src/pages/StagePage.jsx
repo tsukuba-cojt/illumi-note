@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom'
-import { projects } from '../mock/projects.js'
+import { getProjects, addProject } from '../stores/projectsStore.js'
 import stage1Image from './Stage1.png'
 
 const stageTemplates = [
@@ -36,7 +36,8 @@ export default function StagePage() {
   const handleSelectStage = (stageId) => {
     if (!fromNewProject) return
 
-    const nextIdNumber = projects.reduce((max, project) => {
+    const currentProjects = getProjects()
+    const nextIdNumber = currentProjects.reduce((max, project) => {
       const match = String(project.id).match(/^p(\d+)$/)
 
       if (!match) return max
@@ -55,7 +56,7 @@ export default function StagePage() {
       stageTemplateId: stageId,
     }
 
-    projects.push(newProject)
+    addProject(newProject)
     navigate(`/projects/${newProjectId}`)
   }
 
