@@ -1,7 +1,7 @@
 import stage1Image from './Stage1.png'
 
 const stages = [
-  { id: 'stage-1', label: 'Stage 1', image: stage1Image },
+  { id: 'stage-1', label: 'Stage 1', image: stage1Image, description: '講堂をイメージしたステージです'},
   { id: 'stage-2', label: 'Stage 2' },
   { id: 'stage-3', label: 'Stage 3' },
   { id: 'stage-4', label: 'Stage 4' },
@@ -32,7 +32,7 @@ export default function StageView() {
             <div className="stageview-card-footer">
               <span className="stageview-card-title">{stage.label}</span>
               <span className="project-detail-stage-note">
-                {stage.image ? 'このステージのプレビュー画像です。' : 'プレビューは準備中です。'}
+                {stage.description ? stage.description : 'プレビューは準備中です。'}
               </span>
             </div>
           </article>
