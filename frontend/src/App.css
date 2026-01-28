@@ -1479,6 +1479,7 @@ header.global > img {
   header.global {
     padding: 0;
     height: 70px;
+    box-shadow: none;
   }
 
   .scene-card-panel {
