@@ -45,8 +45,8 @@ export default function RegisterPage() {
         if (details.password?.includes('required')) {
           messages.push('パスワードは必須です。')
         }
-        if (details.password?.includes('min_length_8')) {
-          messages.push('パスワードは8文字以上で入力してください。')
+        if (details.password?.includes('min_length_5')) {
+          messages.push('パスワードは5文字以上で入力してください。')
         }
         if (details.confirmPassword?.includes('mismatch')) {
           messages.push('パスワードと確認用パスワードが一致しません。')

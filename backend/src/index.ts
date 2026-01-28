@@ -63,8 +63,8 @@ app.post('/api/auth/register', async (c) => {
   if (!password) {
     details.password = [...(details.password ?? []), 'required']
   }
-  if (password && password.length < 8) {
-    details.password = [...(details.password ?? []), 'min_length_8']
+  if (password && password.length < 5) {
+    details.password = [...(details.password ?? []), 'min_length_5']
   }
   if (password !== confirmPassword) {
     details.confirmPassword = [...(details.confirmPassword ?? []), 'mismatch']
