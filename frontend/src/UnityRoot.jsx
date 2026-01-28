@@ -7,6 +7,7 @@ export default function UnityRoot() {
 
   const shouldDisplay =
     matchPath('/projects/:projectId', location.pathname) ||
+    matchPath('/projects/:projectId/scenes', location.pathname) ||
     matchPath('/projects/:projectId/scenes/:sceneId', location.pathname)
 
   useEffect(() => {
