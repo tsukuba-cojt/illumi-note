@@ -231,8 +231,11 @@ header.global > img {
   color: #111827;
   cursor: pointer;
   /* opacity: 0.6; */
-  transition: background-color 0.2s ease, opacity 0.2s ease,
-    color 0.2s ease, transform 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    opacity 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
 }
 
 .projects-new-button:hover:not(:disabled) {
@@ -273,7 +276,9 @@ header.global > img {
   justify-content: center;
   padding: 16px;
   cursor: grab;
-  transition: transform 0.2s ease, opacity 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
 }
 
 .project-card:not(.project-card-selectable) {
@@ -836,7 +841,10 @@ header.global > img {
   color: #111827;
   cursor: pointer;
   opacity: 0.9;
-  transition: background-color 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    opacity 0.2s ease,
+    transform 0.2s ease;
 }
 
 .profile-save-button:hover:not(:disabled) {
@@ -1001,13 +1009,22 @@ header.global > img {
   border: solid 2px #febf00;
 }
 
+.lighting-info-button,
 .lighting-info-button:hover {
-  background-color: #febf00
+  background-color: #f5f5f5;
+  border: solid 1.5px #6b7280;
+  color: #6b7280;
+  width: 15px;
+  height: 15px;
+  padding: 0;
+  border-radius: 50%;
+  display: grid;
+  place-content: center
 }
+
 .lighting-toggle-button:hover {
   background-color: #ffffff;
   transform: scale(1.1);
-
 }
 
 .lighting-toggle-off {
@@ -1019,7 +1036,26 @@ header.global > img {
 .lighting-toggle-off:hover {
   background-color: #febf00;
   border-color: #febf00;
+}
 
+/* iマークをホバーして説明を表示 */
+.lighting-info-button {
+  position: relative;
+}
+.lighting-info-button:hover::before {
+  content: attr(data-tooltip);
+  position: absolute;
+  display: block;
+  width: max-content;
+  max-width: 200px;
+  padding: 5px;
+  border-radius: 5px;
+  background-color: white;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  text-align: left;
+  left: 50%;
+  top: 50%;
+  transform: translate(calc(-100% - 20px), -50%);
 }
 
 .lighting-control-body {
@@ -1058,7 +1094,7 @@ header.global > img {
   border-radius: 999px;
   outline: none;
 
-/* Chrome/Edge/Safari */
+  /* Chrome/Edge/Safari */
   background: linear-gradient(
     to right,
     var(--active) 0 var(--pct),
@@ -1248,7 +1284,7 @@ header.global > img {
   background-color: #ffffff;
 }
 .scene-card:hover {
-  border: 2px solid #febf00;
+  outline: 2px solid #febf00;
 }
 .scene-card-drop-target {
   border-color: #febf00;
@@ -1390,7 +1426,9 @@ header.global > img {
   cursor: pointer;
   z-index: 10;
   transition: transform 0.2s ease;
-  box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px rgba(254, 191, 0, 0.6);
+  box-shadow:
+    0 0 0 2px #ffffff,
+    0 0 0 4px rgba(254, 191, 0, 0.6);
   outline: none;
 }
 
@@ -1408,7 +1446,8 @@ header.global > img {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  filter: brightness(0) saturate(100%) invert(20%) sepia(10%) saturate(500%) hue-rotate(0deg) brightness(0.3);
+  filter: brightness(0) saturate(100%) invert(20%) sepia(10%) saturate(500%)
+    hue-rotate(0deg) brightness(0.3);
 }
 
 .scene-undo-toast {
@@ -1564,7 +1603,9 @@ header.global > img {
   border: none;
   background: transparent;
   padding: 0;
-  transition: opacity 0.25s ease, transform 0.25s ease;
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease;
   z-index: 60;
 }
 
@@ -1608,7 +1649,7 @@ header.global > img {
   gap: 8px;
 }
 
-.scene-history-icon{
+.scene-history-icon {
   width: 20px;
   height: 20px;
 }
@@ -1642,8 +1683,11 @@ header.global > img {
   font-size: 18px;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s ease, opacity 0.2s ease,
-    color 0.2s ease, transform 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    opacity 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
   opacity: 0.6;
 }
 

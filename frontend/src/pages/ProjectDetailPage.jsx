@@ -447,22 +447,14 @@ export default function ProjectDetailPage() {
                             )}
                           </span>
                           <div className="lighting-control-actions">
-                            <button
-                              type="button"
+                            <span
                               className="lighting-info-button"
-                              onClick={() => {
-                                setLightingControls((prev) =>
-                                  prev.map((c, i) =>
-                                    i === index
-                                      ? { ...c, showInfo: !c.showInfo }
-                                      : c,
-                                  ),
-                                );
-                                setHasUserEdited(true);
-                              }}
+                              data-tooltip={getLightingInfoText(
+                                control.channel,
+                              )}
                             >
                               i
-                            </button>
+                            </span>
                             <button
                               type="button"
                               className={`lighting-toggle-button${
@@ -483,12 +475,6 @@ export default function ProjectDetailPage() {
                             </button>
                           </div>
                         </div>
-
-                        {control.showInfo && (
-                          <div className="lighting-info-tooltip">
-                            {getLightingInfoText(control.channel)}
-                          </div>
-                        )}
 
                         <div className="lighting-control-body">
                           <div className="lighting-slider-group">
