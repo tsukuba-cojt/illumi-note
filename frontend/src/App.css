@@ -228,16 +228,16 @@ header.global > img {
   font-size: 14px;
   font-weight: 600;
   background-color: #febf00;
-  color: #ffffff;
+  color: #111827;
   cursor: pointer;
-  opacity: 0.6;
+  /* opacity: 0.6; */
   transition: background-color 0.2s ease, opacity 0.2s ease,
     color 0.2s ease, transform 0.2s ease;
 }
 
 .projects-new-button:hover:not(:disabled) {
-  background-color: #ffcc33;
-  color: #fff4d6;
+  background-color: #febf00;
+  color: #111827;
   opacity: 1;
   transform: scale(1.1);
 }
@@ -426,7 +426,7 @@ header.global > img {
   box-sizing: border-box;
 }
 
- .project-card:not(.project-card-selectable) .project-card-inner {
+.project-card:not(.project-card-selectable) .project-card-inner {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -434,7 +434,7 @@ header.global > img {
   padding: 16px;
   color: inherit;
   text-decoration: none;
- }
+}
 
 .project-card-title {
   margin: 0 0 8px;
@@ -1030,6 +1030,60 @@ header.global > img {
 
 .lighting-slider-track input[type="range"] {
   width: 100%;
+  --active: #febf00;
+  --inactive: #e5e7eb;
+  --pct: 0%;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 999px;
+  outline: none;
+
+/* Chrome/Edge/Safari */
+  background: linear-gradient(
+    to right,
+    var(--active) 0 var(--pct),
+    var(--inactive) var(--pct) 100%
+  );
+}
+
+/* Chrome/Edge/Safari: トラック */
+.lighting-slider-track input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 999px;
+}
+
+/* Chrome/Edge/Safari: つまみ */
+.lighting-slider-track input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #febf00;
+  border: 2px solid #febf00;
+  margin-top: -5px;
+  cursor: pointer;
+}
+
+/* Firefox: トラック + 進捗 */
+.lighting-slider-track input[type="range"]::-moz-range-track {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--inactive);
+}
+.lighting-slider-track input[type="range"]::-moz-range-progress {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--active);
+}
+.lighting-slider-track input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #febf00;
+  border: 2px solid #febf00;
+  cursor: pointer;
 }
 
 .lighting-slider-ticks {
