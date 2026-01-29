@@ -978,29 +978,48 @@ header.global > img {
 .lighting-toggle-button {
   border-radius: 999px;
   border: none;
-  padding: 2px 10px;
+  padding: 5px 10px;
   font-size: 11px;
   font-weight: 600;
   cursor: pointer;
+  color: #111827;
 }
 
-.scene-add-button {
-  background-color: #16a34a;
+.lighting-info-button:focus,
+.lighting-toggle-button:focus {
+  outline: none;
 }
 
 .lighting-info-button {
-  background-color: #111827;
-  color: #ffffff;
+  background-color: #ffffff;
+  border: solid 2px #febf00;
 }
 
 .lighting-toggle-button {
-  background-color: #111827;
-  color: #ffffff;
+  width: 50px;
+  background-color: #febf00;
+  border: solid 2px #febf00;
+}
+
+.lighting-info-button:hover {
+  background-color: #febf00
+}
+.lighting-toggle-button:hover {
+  background-color: #ffffff;
+  transform: scale(1.1);
+
 }
 
 .lighting-toggle-off {
   background-color: #e5e7eb;
-  color: #374151;
+  border-color: #111827;
+  color: #111827;
+  opacity: 0.6;
+}
+.lighting-toggle-off:hover {
+  background-color: #febf00;
+  border-color: #febf00;
+
 }
 
 .lighting-control-body {
@@ -1161,13 +1180,18 @@ header.global > img {
   width: 100%;
   box-sizing: border-box;
   margin-top: 4px;
-  padding: 4px 0 0;
+  padding: 4px;
   border: none;
   background-color: transparent;
   font-size: 13px;
   color: #374151;
   resize: vertical;
   min-height: 72px;
+}
+
+.project-detail-panel textarea.project-detail-memo:focus {
+  outline: 2px solid #febf00;
+  border-radius: 4px;
 }
 
 .project-detail-updated {
@@ -1361,7 +1385,7 @@ header.global > img {
   height: 32px;
   border: none;
   border-radius: 50%;
-  background-color: #febf00;
+  background-color: #ffffff;
   padding: 6px;
   cursor: pointer;
   z-index: 10;
@@ -1372,6 +1396,7 @@ header.global > img {
 
 .scene-card-delete-button:hover {
   transform: scale(1.1);
+  background-color: #febf00;
 }
 
 .scene-card-delete-button:focus,
