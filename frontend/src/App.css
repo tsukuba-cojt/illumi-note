@@ -1744,6 +1744,10 @@ header.global > img {
   .scene-card-panel {
     background-color: unset;
   }
+
+  .scene-card-delete-button {
+    display: none;
+  }
 }
 
 canvas.hidden {
