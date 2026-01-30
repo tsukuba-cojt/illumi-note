@@ -29,7 +29,7 @@ header.global > nav > ul {
   margin: 0;
   list-style: none;
   display: flex;
-  gap: 50px;
+  gap: 10px;
   align-items: center;
   height: 100%;
   margin-left: 50px;
@@ -39,7 +39,7 @@ header.global > nav a {
   color: #111827;
   font-size: 18px;
   font-weight: bold;
-  padding: 35px 30px;
+  padding: 35px 20px;
 }
 
 header.global > nav a:hover {
@@ -228,16 +228,19 @@ header.global > img {
   font-size: 14px;
   font-weight: 600;
   background-color: #febf00;
-  color: #ffffff;
+  color: #111827;
   cursor: pointer;
-  opacity: 0.6;
-  transition: background-color 0.2s ease, opacity 0.2s ease,
-    color 0.2s ease, transform 0.2s ease;
+  /* opacity: 0.6; */
+  transition:
+    background-color 0.2s ease,
+    opacity 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
 }
 
 .projects-new-button:hover:not(:disabled) {
-  background-color: #ffcc33;
-  color: #fff4d6;
+  background-color: #febf00;
+  color: #111827;
   opacity: 1;
   transform: scale(1.1);
 }
@@ -273,7 +276,9 @@ header.global > img {
   justify-content: center;
   padding: 16px;
   cursor: grab;
-  transition: transform 0.2s ease, opacity 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
 }
 
 .project-card:not(.project-card-selectable) {
@@ -426,7 +431,7 @@ header.global > img {
   box-sizing: border-box;
 }
 
- .project-card:not(.project-card-selectable) .project-card-inner {
+.project-card:not(.project-card-selectable) .project-card-inner {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -434,7 +439,7 @@ header.global > img {
   padding: 16px;
   color: inherit;
   text-decoration: none;
- }
+}
 
 .project-card-title {
   margin: 0 0 8px;
@@ -836,7 +841,10 @@ header.global > img {
   color: #111827;
   cursor: pointer;
   opacity: 0.9;
-  transition: background-color 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    opacity 0.2s ease,
+    transform 0.2s ease;
 }
 
 .profile-save-button:hover:not(:disabled) {
@@ -978,29 +986,76 @@ header.global > img {
 .lighting-toggle-button {
   border-radius: 999px;
   border: none;
-  padding: 2px 10px;
+  padding: 5px 10px;
   font-size: 11px;
   font-weight: 600;
   cursor: pointer;
+  color: #111827;
 }
 
-.scene-add-button {
-  background-color: #16a34a;
+.lighting-info-button:focus,
+.lighting-toggle-button:focus {
+  outline: none;
 }
 
 .lighting-info-button {
-  background-color: #111827;
-  color: #ffffff;
+  background-color: #ffffff;
+  border: solid 2px #febf00;
 }
 
 .lighting-toggle-button {
-  background-color: #111827;
-  color: #ffffff;
+  width: 50px;
+  background-color: #febf00;
+  border: solid 2px #febf00;
+}
+
+.lighting-info-button,
+.lighting-info-button:hover {
+  background-color: #f5f5f5;
+  border: solid 1.5px #6b7280;
+  color: #6b7280;
+  width: 15px;
+  height: 15px;
+  padding: 0;
+  border-radius: 50%;
+  display: grid;
+  place-content: center
+}
+
+.lighting-toggle-button:hover {
+  background-color: #ffffff;
+  transform: scale(1.1);
 }
 
 .lighting-toggle-off {
   background-color: #e5e7eb;
-  color: #374151;
+  border-color: #111827;
+  color: #111827;
+  opacity: 0.6;
+}
+.lighting-toggle-off:hover {
+  background-color: #febf00;
+  border-color: #febf00;
+}
+
+/* iマークをホバーして説明を表示 */
+.lighting-info-button {
+  position: relative;
+}
+.lighting-info-button:hover::before {
+  content: attr(data-tooltip);
+  position: absolute;
+  display: block;
+  width: max-content;
+  max-width: 200px;
+  padding: 5px;
+  border-radius: 5px;
+  background-color: white;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  text-align: left;
+  left: 50%;
+  top: 50%;
+  transform: translate(calc(-100% - 20px), -50%);
 }
 
 .lighting-control-body {
@@ -1030,13 +1085,67 @@ header.global > img {
 
 .lighting-slider-track input[type="range"] {
   width: 100%;
+  --active: #febf00;
+  --inactive: #e5e7eb;
+  --pct: 0%;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 999px;
+  outline: none;
+
+  /* Chrome/Edge/Safari */
+  background: linear-gradient(
+    to right,
+    var(--active) 0 var(--pct),
+    var(--inactive) var(--pct) 100%
+  );
+}
+
+/* Chrome/Edge/Safari: トラック */
+.lighting-slider-track input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 999px;
+}
+
+/* Chrome/Edge/Safari: つまみ */
+.lighting-slider-track input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #febf00;
+  border: 2px solid #febf00;
+  margin-top: -5px;
+  cursor: pointer;
+}
+
+/* Firefox: トラック + 進捗 */
+.lighting-slider-track input[type="range"]::-moz-range-track {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--inactive);
+}
+.lighting-slider-track input[type="range"]::-moz-range-progress {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--active);
+}
+.lighting-slider-track input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #febf00;
+  border: 2px solid #febf00;
+  cursor: pointer;
 }
 
 .lighting-slider-ticks {
   display: flex;
   justify-content: space-between;
   font-size: 10px;
-  color: #9ca3af;
+  color: #111827;
   padding: 0 2px;
 }
 
@@ -1058,7 +1167,7 @@ header.global > img {
 }
 
 .lighting-slider-tick-active {
-  color: #febf00;
+  /* color: #febf00; */
   font-weight: 600;
   font-size: 13px;
 }
@@ -1107,13 +1216,18 @@ header.global > img {
   width: 100%;
   box-sizing: border-box;
   margin-top: 4px;
-  padding: 4px 0 0;
+  padding: 4px;
   border: none;
   background-color: transparent;
   font-size: 13px;
   color: #374151;
   resize: vertical;
   min-height: 72px;
+}
+
+.project-detail-panel textarea.project-detail-memo:focus {
+  outline: 2px solid #febf00;
+  border-radius: 4px;
 }
 
 .project-detail-updated {
@@ -1170,7 +1284,7 @@ header.global > img {
   background-color: #ffffff;
 }
 .scene-card:hover {
-  border: 2px solid #febf00;
+  outline: 2px solid #febf00;
 }
 .scene-card-drop-target {
   border-color: #febf00;
@@ -1307,17 +1421,20 @@ header.global > img {
   height: 32px;
   border: none;
   border-radius: 50%;
-  background-color: #febf00;
+  background-color: #ffffff;
   padding: 6px;
   cursor: pointer;
   z-index: 10;
   transition: transform 0.2s ease;
-  box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px rgba(254, 191, 0, 0.6);
+  box-shadow:
+    0 0 0 2px #ffffff,
+    0 0 0 4px rgba(254, 191, 0, 0.6);
   outline: none;
 }
 
 .scene-card-delete-button:hover {
   transform: scale(1.1);
+  background-color: #febf00;
 }
 
 .scene-card-delete-button:focus,
@@ -1329,7 +1446,8 @@ header.global > img {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  filter: brightness(0) saturate(100%) invert(20%) sepia(10%) saturate(500%) hue-rotate(0deg) brightness(0.3);
+  filter: brightness(0) saturate(100%) invert(20%) sepia(10%) saturate(500%)
+    hue-rotate(0deg) brightness(0.3);
 }
 
 .scene-undo-toast {
@@ -1485,7 +1603,9 @@ header.global > img {
   border: none;
   background: transparent;
   padding: 0;
-  transition: opacity 0.25s ease, transform 0.25s ease;
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease;
   z-index: 60;
 }
 
@@ -1529,7 +1649,7 @@ header.global > img {
   gap: 8px;
 }
 
-.scene-history-icon{
+.scene-history-icon {
   width: 20px;
   height: 20px;
 }
@@ -1563,8 +1683,11 @@ header.global > img {
   font-size: 18px;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s ease, opacity 0.2s ease,
-    color 0.2s ease, transform 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    opacity 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
   opacity: 0.6;
 }
 
@@ -1683,10 +1806,20 @@ header.global > img {
     padding: 0;
     height: 70px;
     box-shadow: none;
+    position: initial;
+    top: initial;
   }
 
   .scene-card-panel {
     background-color: unset;
+  }
+
+  .scene-card-delete-button {
+    display: none;
+  }
+
+  .floating-add-button.is-visible {
+    display: none;
   }
 }
 

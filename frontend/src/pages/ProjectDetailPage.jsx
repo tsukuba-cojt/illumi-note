@@ -54,7 +54,7 @@ function normalizeHalfWidthAlphanumerics(value) {
   if (value == null) return "";
   const text = String(value);
   return text.replace(/[Ａ-Ｚａ-ｚ０-９]/g, (char) =>
-    String.fromCharCode(char.charCodeAt(0) - 0xfee0)
+    String.fromCharCode(char.charCodeAt(0) - 0xfee0),
   );
 }
 
@@ -113,14 +113,14 @@ function normalizeLightingControls(rawControls) {
 async function fetchLightSettings(projectId, sceneId) {
   const res = await fetch(
     `/api/projects/${encodeURIComponent(projectId)}/scenes/${encodeURIComponent(
-      sceneId
+      sceneId,
     )}/light`,
     {
       method: "GET",
       headers: {
         Accept: "application/json",
       },
-    }
+    },
   );
 
   if (res.status === 404) return null;
@@ -131,7 +131,7 @@ async function fetchLightSettings(projectId, sceneId) {
 async function putLightSettings(projectId, sceneId, payload) {
   const res = await fetch(
     `/api/projects/${encodeURIComponent(projectId)}/scenes/${encodeURIComponent(
-      sceneId
+      sceneId,
     )}/light`,
     {
       method: "PUT",
@@ -140,7 +140,7 @@ async function putLightSettings(projectId, sceneId, payload) {
         Accept: "application/json",
       },
       body: JSON.stringify(payload),
-    }
+    },
   );
   if (!res.ok) throw new Error(`PUT light failed: ${res.status}`);
 }
@@ -177,19 +177,19 @@ export default function ProjectDetailPage() {
 
   const [activeTab, setActiveTab] = useState("lighting");
   const [lightingControls, setLightingControls] = useState(() =>
-    createDefaultLightingControls()
+    createDefaultLightingControls(),
   );
   const [timeText, setTimeText] = useState(() =>
-    normalizeHalfWidthAlphanumerics(scene?.time || "")
+    normalizeHalfWidthAlphanumerics(scene?.time || ""),
   );
   const [sceneNameText, setSceneNameText] = useState(() =>
-    normalizeHalfWidthAlphanumerics(scene?.sceneName || defaultSceneName)
+    normalizeHalfWidthAlphanumerics(scene?.sceneName || defaultSceneName),
   );
   const [memoText, setMemoText] = useState(() =>
-    normalizeHalfWidthAlphanumerics(scene?.memo || "")
+    normalizeHalfWidthAlphanumerics(scene?.memo || ""),
   );
   const [lastUpdatedText, setLastUpdatedText] = useState(
-    project?.updatedAt || ""
+    project?.updatedAt || "",
   );
   const [hasUserEdited, setHasUserEdited] = useState(false);
 
@@ -200,7 +200,7 @@ export default function ProjectDetailPage() {
   useEffect(() => {
     setTimeText(normalizeHalfWidthAlphanumerics(scene?.time || ""));
     setSceneNameText(
-      normalizeHalfWidthAlphanumerics(scene?.sceneName || defaultSceneName)
+      normalizeHalfWidthAlphanumerics(scene?.sceneName || defaultSceneName),
     );
     setMemoText(normalizeHalfWidthAlphanumerics(scene?.memo || ""));
   }, [projectId, sceneId, defaultSceneName]);
@@ -261,7 +261,7 @@ export default function ProjectDetailPage() {
           parsed.lightingControls.length > 0
         ) {
           setLightingControls(
-            normalizeLightingControls(parsed.lightingControls)
+            normalizeLightingControls(parsed.lightingControls),
           );
         }
         if (typeof parsed.memoText === "string") {
@@ -309,7 +309,7 @@ export default function ProjectDetailPage() {
     try {
       window.localStorage.setItem(
         `projectLastUpdatedAt:${projectId}`,
-        formatted
+        formatted,
       );
     } catch {}
 
@@ -381,7 +381,7 @@ export default function ProjectDetailPage() {
                   }}
                   onBlur={(e) => {
                     setTimeText(
-                      normalizeHalfWidthAlphanumerics(e.target.value)
+                      normalizeHalfWidthAlphanumerics(e.target.value),
                     );
                   }}
                 />
@@ -399,7 +399,7 @@ export default function ProjectDetailPage() {
                   }}
                   onBlur={(e) => {
                     setSceneNameText(
-                      normalizeHalfWidthAlphanumerics(e.target.value)
+                      normalizeHalfWidthAlphanumerics(e.target.value),
                     );
                   }}
                 />
@@ -447,22 +447,14 @@ export default function ProjectDetailPage() {
                             )}
                           </span>
                           <div className="lighting-control-actions">
-                            <button
-                              type="button"
+                            <span
                               className="lighting-info-button"
-                              onClick={() => {
-                                setLightingControls((prev) =>
-                                  prev.map((c, i) =>
-                                    i === index
-                                      ? { ...c, showInfo: !c.showInfo }
-                                      : c
-                                  )
-                                );
-                                setHasUserEdited(true);
-                              }}
+                              data-tooltip={getLightingInfoText(
+                                control.channel,
+                              )}
                             >
                               i
-                            </button>
+                            </span>
                             <button
                               type="button"
                               className={`lighting-toggle-button${
@@ -473,8 +465,8 @@ export default function ProjectDetailPage() {
                               onClick={() => {
                                 setLightingControls((prev) =>
                                   prev.map((c, i) =>
-                                    i === index ? { ...c, isOn: !c.isOn } : c
-                                  )
+                                    i === index ? { ...c, isOn: !c.isOn } : c,
+                                  ),
                                 );
                                 setHasUserEdited(true);
                               }}
@@ -483,12 +475,6 @@ export default function ProjectDetailPage() {
                             </button>
                           </div>
                         </div>
-
-                        {control.showInfo && (
-                          <div className="lighting-info-tooltip">
-                            {getLightingInfoText(control.channel)}
-                          </div>
-                        )}
 
                         <div className="lighting-control-body">
                           <div className="lighting-slider-group">
@@ -499,8 +485,22 @@ export default function ProjectDetailPage() {
                                 max={DISCRETE_LEVELS.length - 1}
                                 step="1"
                                 value={levelIndex}
+                                style={{
+                                  "--pct": `${(levelIndex / Math.max(1, DISCRETE_LEVELS.length - 1)) * 100}%`,
+                                }}
                                 onChange={(e) => {
-                                  const newIndex = Number(e.target.value);
+                                  const el = e.target;
+                                  const newIndex = Number(el.value);
+
+                                  // 進捗％を更新（Chrome系の塗り分け用）
+                                  const min = Number(el.min || 0);
+                                  const max = Number(el.max || 1);
+                                  const pct =
+                                    ((newIndex - min) /
+                                      Math.max(1, max - min)) *
+                                    100;
+                                  el.style.setProperty("--pct", `${pct}%`);
+
                                   const newLevel =
                                     DISCRETE_LEVELS[newIndex] ??
                                     DISCRETE_LEVELS[0];
@@ -509,8 +509,8 @@ export default function ProjectDetailPage() {
                                     prev.map((c, i) =>
                                       i === index
                                         ? { ...c, level: newLevel }
-                                        : c
-                                    )
+                                        : c,
+                                    ),
                                   );
                                   setHasUserEdited(true);
                                 }}
@@ -544,8 +544,8 @@ export default function ProjectDetailPage() {
                                   prev.map((c, i) =>
                                     i === index
                                       ? { ...c, color: e.target.value }
-                                      : c
-                                  )
+                                      : c,
+                                  ),
                                 );
                                 setHasUserEdited(true);
                               }}

@@ -4,7 +4,7 @@ export default function Header({ showLinks }) {
   showLinks ??= true;
   return (
     <header className="global">
-      <img src="../../../public/img/Illuminote_logo.png" />
+      <img src="/img/Illuminote_logo.png" alt="Illuminote" />
       {showLinks && (
         <nav>
           <ul>
