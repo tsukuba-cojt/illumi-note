@@ -39,8 +39,6 @@ cd backend
 npm install
 npm run dev
 ```
-- デフォルトで `http://localhost:3000` が起動します。
-- `backend/src/index.ts` 内で `/api` 以下のエンドポイントとファイルベースのデータ永続化を提供しています @backend/src/index.ts#42-372。
 
 ### 2. フロントエンドの起動
 ```bash
@@ -48,9 +46,7 @@ cd frontend
 npm install
 npm run dev
 ```
-- デフォルトで `http://localhost:5173` が起動します。
-- `frontend/.env` の `VITE_API_BASE_URL` は API サーバーを指すように設定してください（初期値: `http://localhost:3000/api`）。
-- Vite 開発サーバーは `vite.config.js` のプロキシ設定により `/api` をバックエンドへ転送します。`VITE_API_PROXY_TARGET` で上書き可能です @frontend/vite.config.js#1-21。
+- `http://localhost:5173` が起動します。
 
 ### 3. ブラウザでアクセス
 - フロントエンド起動後、`http://localhost:5173` へアクセスするとログイン画面が表示されます @frontend/src/App.jsx#20-41。

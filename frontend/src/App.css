@@ -452,6 +452,37 @@ header.global > img {
   color: #6b7280;
 }
 
+.page-projects .project-card .project-card-inner {
+  color: #111827;
+}
+
+.page-projects .project-card .project-card-title,
+.page-projects .project-card .project-card-meta {
+  color: #111827;
+}
+
+.page-projects .project-card {
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.page-projects .project-card.project-card-selectable:hover {
+  background-color: #ffe599;
+}
+
+.page-projects .project-card-select-button:hover:not(:disabled),
+.page-projects .project-card-select-button:active:not(:disabled) {
+  background-color: transparent;
+  color: #111827;
+}
+
+.page-projects a.project-card-inner:hover,
+.page-projects a.project-card-inner:active {
+  color: #111827;
+}
+
 .side-nav {
   width: 80px;
   background-color: #e5e7eb;
